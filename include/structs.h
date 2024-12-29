@@ -100,7 +100,7 @@ struct savefileheader {
   uint8_t unkn4[6];
   uint16_t prev_menu;
   uint16_t bank_notes;
-  uint32_t unkn5;
+  uint16_t unkn5;
   uint16_t philosopher_stone;
   uint8_t unkn6[7];
   uint8_t party_order_indices[5];
