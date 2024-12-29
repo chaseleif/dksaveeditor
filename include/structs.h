@@ -81,37 +81,57 @@ struct character {
   struct item items[64];
 };
 
+struct person_colors {
+  uint8_t first_hi[3];
+  uint8_t first_lo[3];
+  uint8_t second_hi[3];
+  uint8_t second_med[3];
+  uint8_t second_lo[3];
+  uint8_t third_hi[3];
+  uint8_t third_med[3];
+  uint8_t third_lo[3];
+};
+
+// Beginning of save file
 struct savefileheader {
   char curr_location_name[12];
   uint8_t unkn1[9];
   char save_game_label[23];
-  uint8_t unkn2[60];
+  uint8_t unkn2[18];
+  uint8_t unkn3[37];
+  uint8_t unkn4;
+  uint16_t city_contents_seed;
+  uint8_t unkn5[2];
   uint16_t year;
   uint16_t month;
   uint16_t day;
   uint16_t hour;
   struct money party_money;
-  uint32_t unkn3;
+  uint8_t unkn6[4];
   uint16_t reputation;
   uint16_t curr_location;
   uint16_t x_coord;
   uint16_t y_coord;
   uint16_t curr_menu;
-  uint8_t unkn4[6];
+  uint8_t unkn7[6];
   uint16_t prev_menu;
   uint16_t bank_notes;
-  uint16_t unkn5;
+  uint8_t unkn8[4];
   uint16_t philosopher_stone;
-  uint8_t unkn6[7];
+  uint8_t unkn9[7];
   uint8_t party_order_indices[5];
-  uint8_t unkn7;
+  uint8_t unkn10;
   uint8_t party_leader_index;
+  uint8_t unkn11[3];
+  uint8_t unkn[74];
 };
 
 struct partyheader {
   uint16_t num_curr_characters;
   uint16_t num_characters;
   uint16_t party_char_indices[5];
+  uint32_t party_images[5];
+  struct person_colors party_colors[5];
 };
 
 struct equipment {
