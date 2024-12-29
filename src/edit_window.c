@@ -60,8 +60,10 @@ void setup_edit() {
 static int party_enter() {
   // the final options after player(s)
   if (highlight==lastindex) return PREPMENU;
-  else if (highlight==lastindex-1)
+  else if (highlight==lastindex-1) {
     savesave(dksavefile, players, &saveinfo, &partyinfo);
+    printerror(2,"Saved",dksavefile);
+  }
   else if (highlight==lastindex-2) {
     loadsave(dksavefile, &players, &saveinfo, &partyinfo);
     setup_edit();
