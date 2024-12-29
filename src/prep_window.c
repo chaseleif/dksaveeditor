@@ -60,7 +60,9 @@ int prep_processinput(const int ch) {
           break;
       }
       break;
-    case 'c': case 'C': case 'q': case 'Q': return MAINMENU;
+    case KEY_RESET: case KEY_BREAK: case KEY_CANCEL: case KEY_EXIT: case 27:
+    case 4: case 'q': case 'Q': case 'c': case 'C':
+      return MAINMENU;
     default:
       break;
   }

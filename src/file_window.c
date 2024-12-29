@@ -116,7 +116,8 @@ int file_processinput(const int ch) {
         printerror(1, msgstr);
       }
       break;
-    case 'c': case 'C': case 'q': case 'Q':
+    case KEY_RESET: case KEY_BREAK: case KEY_CANCEL: case KEY_EXIT: case 27:
+    case 4: case 'q': case 'Q': case 'c': case 'C':
       strcpy(strdst, dstbak);
       return PREPMENU;
     case KEY_ENTER: case '\n':

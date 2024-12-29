@@ -76,7 +76,8 @@ int main(int argc, char **argv) {
     if (lastmenu != menulevel) {
       int sethighlight = (lastmenu==ABOUTMENU)?1:
                           (lastmenu==FILEMENU&&strdst==dksavefile)?1:
-                          (lastmenu==FILEMENU&&strdst==NULL)?2:0;
+                          (lastmenu==FILEMENU&&strdst==NULL)?2:
+                          (lastmenu==EDITMENU&&menulevel==PREPMENU)?2:0;
       if (lastmenu == FILEMENU && strdst && strcmp(dstbak,strdst)) {
         if (strdst == dksavefile) {
           if (isfile(dksavefile)) {

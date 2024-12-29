@@ -88,7 +88,6 @@ void getinput() {
       case 4: case 'q': case 'Q': case 'c': case 'C':
         ch = -1;
         break;
-      default: break;
       case KEY_ENTER: case '\n':
         ch = 0;
         for (int i=0;i<num_values;++i) { if (strlen(values[i])==0) ch=-1; }
@@ -101,6 +100,7 @@ void getinput() {
         if (writei == 1) writei=0;
         else if (num_values==2) writei=1;
         break;
+      default: break;
     }
   }while(ch>0);
   hide_cursor();

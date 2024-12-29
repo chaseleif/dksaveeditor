@@ -310,7 +310,8 @@ int edit_processinput(const int ch) {
         clear();
       }
       break;
-    case 'q': case 'Q': case 'c': case 'C':
+    case KEY_RESET: case KEY_BREAK: case KEY_CANCEL: case KEY_EXIT: case 27:
+    case 4: case 'q': case 'Q': case 'c': case 'C':
       int position = 1;
       switch(state) {
         case PARTY: return PREPMENU;
