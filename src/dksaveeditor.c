@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include <ncurses.h>
 #include <signal.h>
+#include <stdarg.h>
 #include "structs.h"
 #include "shared.h"
 
@@ -15,7 +16,7 @@ struct formula *formulas=NULL;
 struct savefileheader saveinfo;
 struct partyheader partyinfo;
 
-char *strdst, *tmpstr, *titlebar, *dksavefile, *dklstfile, *msgstr, *field;
+char *strdst, *tmpstr, *titlebar, *dksavefile, *dkdir, *msgstr, *field;
 char **menuoptions;
 int topy, nrows, menuwidth, highlight;
 int num_items, num_saints, num_formulas;
@@ -25,6 +26,8 @@ void printerror(const int n, ...) {
   va_list args;
   va_start(args, n);
   clear();
+  int maxy, maxx;
+  getmaxyx(stdscr,maxy,maxx);
   const int margin = MENUMARGIN;
   for (int i=0;i<n;++i) {
     printwithattr(i+MENUFIRSTLINE,margin,
@@ -46,7 +49,8 @@ int main(int argc, char **argv) {
   keypad(stdscr,TRUE);
   cbreak();
   noecho();
-  notimeout(stdscr,TRUE);
+  notimeout(stdscr,FALSE);
+  ESCDELAY = 0;
   intrflush(stdscr,TRUE);
   hide_cursor();
   if (has_colors()) {
@@ -69,21 +73,20 @@ int main(int argc, char **argv) {
     menuoptions[i] = malloc(sizeof(char)*MAXSTRLEN);
   }
   dksavefile = malloc(sizeof(char)*MAXSTRLEN);
-  dklstfile = malloc(sizeof(char)*MAXSTRLEN);
+  dkdir = malloc(sizeof(char)*MAXSTRLEN);
   titlebar = malloc(sizeof(char)*MAXSTRLEN);
   msgstr = malloc(sizeof(char)*MAXSTRLEN);
   field = malloc(sizeof(char)*MAXSTRLEN);
   tmpstr = malloc(sizeof(char)*MAXSTRLEN);
+  load_static_darklands_data();
   
   int lastmenu=EXIT, menulevel=MAINMENU;
   int (*processinput)(const int);
   do {
     if (lastmenu != menulevel) {
       int sethighlight = (lastmenu==ABOUTMENU)?1:
-                          (lastmenu==FILEMENU&&strdst==dksavefile)?1:
-                          (lastmenu==FILEMENU&&strdst==NULL)?2:
                           (lastmenu==EDITMENU&&menulevel==PREPMENU)?2:0;
-      if (lastmenu == FILEMENU && strdst && strcmp(tmpstr,strdst)) {
+      if (lastmenu == FILEMENU && strcmp(tmpstr,strdst)) {
         if (strdst == dksavefile) {
           if (isfile(dksavefile)) {
             if (players) {
@@ -95,13 +98,6 @@ int main(int argc, char **argv) {
               printerror(2,"Error loading save file:", dksavefile);
               strcpy(dksavefile, ".");
             }
-          }
-        }
-        else if (!items && isfile(dklstfile)) {
-          load_lst(dklstfile);
-          if (!items) {
-            printerror(2,"Error loading LST file:", dklstfile);
-            strcpy(dklstfile, ".");
           }
         }
         strdst = NULL;
@@ -126,8 +122,10 @@ int main(int argc, char **argv) {
           break;
         case FILEMENU:
           strcpy(tmpstr,strdst);
-          sprintf(titlebar,"Select the %s file",
-                  (strdst==dksavefile)?"DKSAVEx.SAV":"DARKLAND.LST");
+          if (strdst == dksavefile)
+            strcpy(titlebar,"Select the DKSAVEx.SAV file");
+          else
+            strcpy(titlebar,"Select the Darklands game folder");
           strdst[0]='.'; strdst[1]='\0';
           setup_file();
           processinput = &file_processinput;
@@ -163,6 +161,8 @@ int main(int argc, char **argv) {
       lastmenu = menulevel;
       if (sethighlight) highlight=sethighlight;
     }
+    int maxy, maxx;
+    getmaxyx(stdscr,maxy,maxx);
     if (titlebar[0]!='\0')
       printcolor(TITLELINENUM,TITLEMARGIN,DKGRNBLK,"%s",titlebar);
     const int leftmargin = MENUMARGIN;
@@ -187,7 +187,7 @@ static void finish(int sig) {
   free(menuoptions);
   free(titlebar);
   free(dksavefile);
-  free(dklstfile);
+  free(dkdir);
   free(msgstr);
   free(field);
   free(tmpstr);

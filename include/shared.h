@@ -53,12 +53,12 @@
 #define MINLEFTMARGIN 2
 // attempt to center text on the screen
 #define TITLEMARGIN \
-  ((COLS>>1)-(strlen(titlebar)>>1)+strlen(titlebar)<COLS-MINLEFTMARGIN) ? \
-  (COLS>>1)-(strlen(titlebar)>>1) : \
+  ((maxx>>1)-(strlen(titlebar)>>1)+strlen(titlebar)<COLS-MINLEFTMARGIN) ? \
+  (maxx>>1)-(strlen(titlebar)>>1) : \
   MINLEFTMARGIN
 #define MENUMARGIN \
-  ((COLS>>1)-(menuwidth>>1)+menuwidth<COLS-MINLEFTMARGIN) ? \
-  (COLS>>1)-(menuwidth>>1) : \
+  ((maxx>>1)-(menuwidth>>1)+menuwidth<COLS-MINLEFTMARGIN) ? \
+  (maxx>>1)-(menuwidth>>1) : \
   MINLEFTMARGIN
 
 enum { EXIT, MAINMENU, ABOUTMENU, PREPMENU, FILEMENU, EDITMENU };
@@ -87,5 +87,7 @@ void loadsave(char *filename, struct character **players,
 void savesave(char *filename, struct character *players,
               struct savefileheader *saveinfo, struct partyheader *partyinfo);
 void load_lst(char *filename);
+void load_darklands_data();
+void load_static_darklands_data();
 
 #endif //SHARED_H

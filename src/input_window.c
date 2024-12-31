@@ -50,6 +50,8 @@ void getinput() {
   int leftx, writex, writey, writei = 0;
   const int menuwidth=30;
   do {
+    int maxy, maxx;
+    getmaxyx(stdscr,maxy,maxx);
     const int leftmargin = MENUMARGIN;
     int y = MENUFIRSTLINE;
     printcolor(TITLELINENUM,TITLEMARGIN,DKGRNBLK,"%s",msgstr);

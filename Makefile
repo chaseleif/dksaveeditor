@@ -5,7 +5,15 @@ SRCDIR:=src
 SRCS:=$(wildcard $(SRCDIR)/*.c)
 OBJDIR:=obj
 OBJS:=$(patsubst $(SRCDIR)/%.c, $(OBJDIR)/%.o, $(SRCS))
+DATADIR:=data
+DATALOADER:=dataloader
+DATALOADERSRC:=$(DATADIR)/$(DATALOADER).c
+DATAOUTPUT:=darklands.data
+DATASRCIN:=$(DATADIR)/static_loader.c
+DATASRCOUT:=$(SRCDIR)/darklands_data.c
 BIN:=dksveditor
+
+all: $(BIN)
 
 $(BIN): $(OBJS)
 	$(CC) $(CFLAGS) $(CURSELIB) $^ -o $@
@@ -15,8 +23,18 @@ $(OBJDIR)/%.o: $(SRCDIR)/%.c
 
 $(OBJS): $(OBJDIR)
 
+ifeq ($(origin DARKLANDS),undefined)
 $(OBJDIR):
 	mkdir $(OBJDIR)
+else
+$(OBJDIR):
+	mkdir $(OBJDIR)
+	$(CC) $(CFLAGS) $(DATALOADERSRC) -o $(DATALOADER)
+	./$(DATALOADER) $(DARKLANDS)
+	cp $(DATASRCIN) $(DATASRCOUT)
+	xxd -i $(DATAOUTPUT) | head --lines=-1 >> $(DATASRCOUT)
+	rm -f $(DATALOADER) $(DATAOUTPUT)
+endif
 
 .PHONY: clean
 clean:

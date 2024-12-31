@@ -6,24 +6,30 @@
 
 extern struct character *players;
 extern struct item_definition *items;
+extern struct saint *saints;
+extern struct formula *formulas;
 extern char **menuoptions;
-extern char *strdst, *dksavefile, *dklstfile;
+extern char *strdst, *dksavefile, *dkdir;
 extern int menuwidth, highlight;
 
-static const int lastindex = 3;
+static int need_data;
+static int lastindex;
 
 void setup_prep() {
-  strcpy(menuoptions[0],"Path to darklands.lst = ");
-  if (!dklstfile) strcat(menuoptions[0],"(not set)");
-  else strcat(menuoptions[0],dklstfile);
-  strcpy(menuoptions[1],"Save file = ");
-  if (!dksavefile) strcat(menuoptions[1],"(not set)");
-  else strcat(menuoptions[1],dksavefile);
-  strcpy(menuoptions[2],"Open/edit save file");
-  strcpy(menuoptions[3],"Return to main menu");
-  menuoptions[4][0] = '\0';
+  lastindex=0;
+  if (!items || !saints || !formulas) {
+    need_data=1;
+    strcpy(menuoptions[lastindex++],"Set path to Darklands game");
+  }
+  else need_data=0;
+  strcpy(menuoptions[lastindex],"Save file = ");
+  if (!dksavefile) strcat(menuoptions[lastindex],"(not set)");
+  else strcat(menuoptions[lastindex],dksavefile);
+  strcpy(menuoptions[++lastindex],"Open/edit save file");
+  strcpy(menuoptions[++lastindex],"Return to main menu");
+  menuoptions[lastindex+1][0] = '\0';
   menuwidth=0;
-  for (int i=0;menuoptions[i][0]!='\0';++i) {
+  for (int i=0;i<=lastindex;++i) {
     if (menuwidth<strlen(menuoptions[i])) menuwidth=strlen(menuoptions[i]);
   }
 }
@@ -44,21 +50,26 @@ int prep_processinput(const int ch) {
     case KEY_ENTER: case '\n':
       switch(highlight) {
         case 0:
-          strdst = dklstfile;
+          strdst = (need_data)?dkdir:dksavefile;
           return FILEMENU;
         case 1:
-          strdst = dksavefile;
-          return FILEMENU;
-        case 2:
-          if (!players || !items) {
-            printerror(1,"First set the save file and LST file");
+          if (need_data) {
+            strdst = dksavefile;
+            return FILEMENU;
+          }
+          if (!players) {
+            printerror(1,"First select a save file to open");
             break;
           }
           return EDITMENU;
+        case 2:
+          if (need_data && !players) {
+            printerror(1,"First select a save file to open");
+            break;
+          }
+          return (need_data)?EDITMENU:MAINMENU;
         case 3:
           return MAINMENU;
-        default:
-          break;
       }
       break;
     case KEY_RESET: case KEY_BREAK: case KEY_CANCEL: case KEY_EXIT: case 27:
