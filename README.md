@@ -1,44 +1,56 @@
 # ncurses Darklands save-game editor
 
 I found a [site from vvendigo](https://wendigo.online-siesta.com/darklands/)
-where he collected resources, including data offsets,
-which I used to make this editor.
+where he collected resources,
+including the data offsets I used to make this editor.
 
 He also has a [github](https://github.com/vvendigo).
 
 ## Installation
 Just type make to use the Makefile. You can move the binary where you like.
 
+You can set the path to the game directory during compilation,
+this will embed item, saint, and formula information in the binary.
+Including the game data in the compiled binary
+removes the need to set the path and load the data each application run.
+
+To use this feature,
+set the environment variable DARKLANDS to the game directory before using make.
+
 The only dependency, besides a C compiler, is ncurses.
 
 ## Usage
 This is a menu- and keyboard-driven console application.
 
-Set the path to your `DARKLANDS.LST` file,
-this is required to get the names of items.
+If not compiled with the Darklands data,
+the Darklands path must be set to enable item, saint, and formula functions.
 
-Choose a `DKSAVEx.SAV` file, there are also `.BST` files, use the `.SAV` file.
+Choose a `DKSAVEx.SAV` file.
 
 The file is opened for reading and then immediately closed.
-You can then view/modify the values.
+You can then view/modify the saved game.
+
 If you want to save changes,
 the save option will overwrite the selected name that was opened.
 
 ## Features
-This program will open a saved game and allows you to view and edit values.
-
-There are more values which could be shown or edited,
-e.g.,
-it should be possible to add new items (rather than modifying existing items).
+This program will open a saved game and allows you to view and edit values:
+- Edit party and player stats
+- Edit player items' quality and quantity
+- Add items
+- View, add, and read descriptions of saints
+- View, add, and read descriptions of formulas
 
 ## Note
 I was unable to unequip armor after modification while it was equipped.
+It may have made the armor immune to quality damage.
 It is probably best not to modify equipped items, i.e.,
 unequip any item you want to modify the quality of before saving.
 
 The program uses the actual datatypes, some values are 8 bits, others are 16.
 After modifying a value, the value you see is the value that would be stored.
 
+Using bad values could cause problems.
 There are limits in the display of the game for some values, e.g., 99.
 Using a 3-digit number where it wouldn't normally fit may have side-effects.
 
