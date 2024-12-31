@@ -22,7 +22,7 @@
 extern char **menuoptions;
 extern char *tmpstr, *titlebar, *msgstr, *dksavefile, *field;
 extern int topy, nrows, menuwidth, highlight;
-extern int num_items, num_saints, num_formulas;
+extern uint8_t num_items, num_saints, num_formulas;
 
 extern struct character *players;
 extern struct item_definition *items;

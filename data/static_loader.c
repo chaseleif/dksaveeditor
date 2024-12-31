@@ -5,7 +5,7 @@
 
 unsigned char darklands_data[];
 
-extern int num_items, num_saints, num_formulas;
+extern uint8_t num_items, num_saints, num_formulas;
 extern struct item_definition *items;
 extern struct saint *saints;
 extern struct formula *formulas;

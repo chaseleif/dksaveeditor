@@ -19,7 +19,7 @@ struct partyheader partyinfo;
 char *strdst, *tmpstr, *titlebar, *dksavefile, *dkdir, *msgstr, *field;
 char **menuoptions;
 int topy, nrows, menuwidth, highlight;
-int num_items, num_saints, num_formulas;
+uint8_t num_items, num_saints, num_formulas;
 
 
 void printerror(const int n, ...) {
