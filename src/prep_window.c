@@ -5,7 +5,8 @@
 #include "shared.h"
 
 extern struct character *players;
-extern char **menuoptions, **item_names;
+extern struct item_definition *items;
+extern char **menuoptions;
 extern char *strdst, *dksavefile, *dklstfile;
 extern int menuwidth, highlight;
 
@@ -49,7 +50,7 @@ int prep_processinput(const int ch) {
           strdst = dksavefile;
           return FILEMENU;
         case 2:
-          if (!players || !item_names) {
+          if (!players || !items) {
             printerror(1,"First set the save file and LST file");
             break;
           }

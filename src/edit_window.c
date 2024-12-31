@@ -4,13 +4,14 @@
 #include "structs.h"
 #include "shared.h"
 
-extern char **menuoptions, **item_names;
-extern char *msgstr, *dksavefile, *field;
+extern char **menuoptions;
+extern char *tmpstr, *titlebar, *msgstr, *dksavefile, *field;
 extern int topy, nrows, menuwidth, highlight;
 
 extern struct character *players;
 extern struct savefileheader saveinfo;
 extern struct partyheader partyinfo;
+extern struct item_definition *items;
 
 static const char const attributename[14][8] = {
 "End", "Str", "Agl", "Per", "Int", "Chr", " DF",
@@ -18,7 +19,7 @@ static const char const attributename[14][8] = {
 static const char const skillname[19][5] = {
 "Edge", "Imp", "Fll", "Pol", "Thr", "Bow", "Msl", "Alch", "Relg", "Virt",
 "SpkC", "SpkL", "R&W", "Heal", "Artf", "Stlh", "StrW", "Ride", "WdWs" };
-enum { PARTY, PLAYER, ATTR, SKILL, ITEM };
+enum { PARTY, PLAYER, ATTR, SKILL, ITEM, ADDITEM };
 
 static struct character *player = NULL;
 static int state = PARTY, lastindex = 0;
@@ -57,7 +58,7 @@ void setup_edit() {
   state = PARTY;
 }
 
-static int party_enter() {
+static int edit_enter() {
   // the final options after player(s)
   if (highlight==lastindex) return PREPMENU;
   else if (highlight==lastindex-1) {
@@ -205,13 +206,56 @@ static void attributes_enter() {
   highlight = position;
 }
 
+static void setup_additem() {
+  if (player->num_items==64) {
+    printerror(2,"Players are limited to 64 items",
+                  "Unable to add another item");
+    return;
+  }
+  strcpy(tmpstr, titlebar);
+  strcpy(titlebar,"Add item");
+  lastindex = 1;
+  for (int i=0;items[i].name[0]!='\0';++i) {
+    strcpy(menuoptions[lastindex++],items[i].name);
+  }
+  strcpy(menuoptions[lastindex++], "Finished adding items");
+  menuoptions[lastindex--][0] = '\0';
+  clear();
+  highlight = 1;
+  state = ADDITEM;
+}
+static void additem_enter() {
+  if (highlight < lastindex && player->num_items==64) {
+    printerror(2,"Players are limited to 64 items",
+                  "Unable to add another item");
+    highlight = lastindex;
+  }
+  if (highlight==lastindex) {
+    strcpy(titlebar,tmpstr);
+    setup_items();
+    topy = 0;
+    edit_processinput(KEY_END);
+    edit_processinput(KEY_UP);
+    return;
+  }
+  player->items[player->num_items].code = highlight-1;
+  player->items[player->num_items].type = items[highlight-1].type;
+  player->items[player->num_items].quality = items[highlight-1].quality;
+  player->items[player->num_items].quantity = 1;
+  player->items[player->num_items].weight = items[highlight-1].weight;
+  ++player->num_items;
+  sprintf(msgstr, "Added %s\n", items[highlight-1].name);
+  printerror(1, msgstr);
+}
+
 static void setup_items() {
   lastindex = 1;
   for (int i=0;i<player->num_items;++i) {
     sprintf(menuoptions[lastindex++], "%s quality(%u) quantity(%u)",
-            item_names[player->items[i].code],
+            items[player->items[i].code].name,
             player->items[i].quality, player->items[i].quantity);
   }
+  strcpy(menuoptions[lastindex++], "Add items");
   strcpy(menuoptions[lastindex++], "Finished with items");
   menuoptions[lastindex--][0] = '\0';
   menuwidth=0;
@@ -230,7 +274,12 @@ static void items_enter() {
     topy=0;
     return;
   }
-  strcpy(msgstr,item_names[player->items[highlight-1].code]);
+  if (highlight==lastindex-1) {
+    setup_additem();
+    topy=0;
+    return;
+  }
+  strcpy(msgstr,items[player->items[highlight-1].code].name);
   sprintf(field,"Quality:%u/Quantity:%u",
           player->items[highlight-1].quality,
           player->items[highlight-1].quantity);
@@ -338,7 +387,7 @@ int edit_processinput(const int ch) {
     case KEY_ENTER: case '\n':
       switch(state) {
         case PARTY:
-          return party_enter();
+          return edit_enter();
         case PLAYER:
           player_enter(); break;
         case ATTR:
@@ -347,6 +396,8 @@ int edit_processinput(const int ch) {
           skills_enter(); break;
         case ITEM:
           items_enter(); break;
+        case ADDITEM:
+          additem_enter(); break;
       }
       break;
     default: break;

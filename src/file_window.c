@@ -7,7 +7,7 @@
 #include "shared.h"
 
 extern char **menuoptions;
-extern char *msgstr, *strdst, *dstbak, *dksavefile, *dklstfile;
+extern char *msgstr, *strdst, *tmpstr, *dksavefile, *dklstfile;
 extern int topy, nrows, menuwidth, highlight;
 
 static int cmp(const void *a, const void *b) {
@@ -102,30 +102,16 @@ int file_processinput(const int ch) {
         clear();
       }
       break;
-    case 'o': case 'O':
+    case KEY_RESET: case KEY_BREAK: case KEY_CANCEL: case KEY_EXIT: case 27:
+    case 4: case 'q': case 'Q': case 'c': case 'C':
+      strcpy(strdst, tmpstr);
+      return PREPMENU;
+    case 'o': case 'O': case KEY_ENTER: case '\n':
       if (isdirectory(menuoptions[highlight])) {
         strcpy(strdst, menuoptions[highlight]);
         highlight = topy = 0;
         clear();
         setup_file();
-      }
-      else {
-        snprintf(msgstr, MAXSTRLEN-1,
-                "%s does not appear to be a directory",
-                menuoptions[highlight]);
-        printerror(1, msgstr);
-      }
-      break;
-    case KEY_RESET: case KEY_BREAK: case KEY_CANCEL: case KEY_EXIT: case 27:
-    case 4: case 'q': case 'Q': case 'c': case 'C':
-      strcpy(strdst, dstbak);
-      return PREPMENU;
-    case KEY_ENTER: case '\n':
-      if (isdirectory(menuoptions[highlight])) {
-        snprintf(msgstr, MAXSTRLEN-1,
-                "%s does not appear to be a file",
-                menuoptions[highlight]);
-        printerror(1, msgstr);
         break;
       }
       strcpy(strdst, menuoptions[highlight]);

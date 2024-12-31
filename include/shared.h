@@ -41,9 +41,9 @@
   }while(0)
 
 // menu char buffer size
-#define MAXSTRLEN 256
+#define MAXSTRLEN 128
 // max rows of any menu (plus one for empty str which signifies menu end)
-#define MAXMENUITEMS 128
+#define MAXMENUITEMS 256
 // row number for the title
 #define TITLELINENUM 3
 // first line of menus
@@ -86,6 +86,6 @@ void loadsave(char *filename, struct character **players,
               struct savefileheader *saveinfo, struct partyheader *partyinfo);
 void savesave(char *filename, struct character *players,
               struct savefileheader *saveinfo, struct partyheader *partyinfo);
-char **get_item_names(char *filename);
+void load_lst(char *filename);
 
 #endif //SHARED_H

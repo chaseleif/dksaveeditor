@@ -190,4 +190,18 @@ struct formula_definition {
   struct ingredient ingredients[5];
 };
 
+struct formula {
+  char name[26];
+  char short_name[12];
+  char description[80];
+  uint16_t mystic_number;
+  uint16_t risk_factor;
+  struct ingredient ingredients[5];
+};
+
+struct saint {
+  char name[24];
+  char short_name[13];
+  char description[349];
+};
 #endif //STRUCTS_H
