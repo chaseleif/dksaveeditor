@@ -27,6 +27,7 @@ int main(int argc, char **argv) {
   signal(SIGINT, finish);
   setlocale(LC_ALL,"");
   initscr();
+  use_default_colors();
   keypad(stdscr,TRUE);
   cbreak();
   noecho();

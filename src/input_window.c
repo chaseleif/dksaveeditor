@@ -74,8 +74,7 @@ void getinput() {
     ch = getch();
     if (isdigit(ch)) {
       if (writex+1==INPUTSTRSIZE) {
-        flash();
-        do { ch = getch(); }while(isdigit(ch));
+        do { flash(); flushinp(); ch = getch(); }while(isdigit(ch));
       }
       else {
         newvalues[writei][writex++] = ch;
@@ -87,8 +86,7 @@ void getinput() {
       case KEY_RESIZE: clear(); break;
       case KEY_BACKSPACE: case 127: case '\b':
         if (!writex) {
-          flash();
-          do { ch=getch(); }while(ch==KEY_BACKSPACE);
+          do { flash(); flushinp(); ch=getch(); }while(ch==KEY_BACKSPACE);
           ungetch(ch);
         }
         else {
