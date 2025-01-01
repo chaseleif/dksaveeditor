@@ -148,7 +148,7 @@ static int edit_enter() {
     }
     sprintf(field,"%u",*dst);
     getinput();
-    *dst = (uint16_t)atoi(field);
+    *dst = atouint16(field);
     if (dst == &saveinfo.party_money.pfennig) {
       const uint16_t pfennig = saveinfo.party_money.pfennig%12;
       const uint16_t groschen = saveinfo.party_money.pfennig/12;
@@ -207,7 +207,7 @@ static void player_enter() {
       strcpy(msgstr,"Age");
       sprintf(field,"%u",player->age);
       getinput();
-      player->age = (uint16_t)atoi(field);
+      player->age = atouint16(field);
       setup_player();
       break;
     case 2:
@@ -265,9 +265,9 @@ static void attributes_enter() {
   char *value = field;
   char *end = strchr(value,'.');
   *end='\0';
-  *curr = (uint8_t)atoi(value);
+  *curr = atouint8(value);
   value = end+1;
-  *max = (uint8_t)atoi(value);
+  *max = atouint8(value);
   const int position = highlight;
   setup_attributes();
   scrollto(position);
@@ -354,9 +354,9 @@ static void items_enter() {
   char *value = field;
   char *end = strchr(value,'.');
   *end='\0';
-  player->items[highlight-1].quality = (uint8_t)atoi(value);
+  player->items[highlight-1].quality = atouint8(value);
   value = end+1;
-  player->items[highlight-1].quantity = (uint8_t)atoi(value);
+  player->items[highlight-1].quantity = atouint8(value);
   const int position = highlight;
   setup_items();
   scrollto(position);
@@ -628,7 +628,7 @@ static void skills_enter() {
   skill += highlight-1;
   sprintf(field,"%u",*skill);
   getinput();
-  *skill = (uint8_t)atoi(field);
+  *skill = atouint8(field);
   const int position = highlight;
   setup_skills();
   scrollto(position);

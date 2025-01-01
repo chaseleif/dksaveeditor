@@ -21,24 +21,6 @@ char **menuoptions;
 int topy, nrows, menuwidth, highlight;
 uint8_t num_items, num_saints, num_formulas;
 
-void printerror(const int n, ...) {
-  va_list args;
-  va_start(args, n);
-  clear();
-  int maxy, maxx;
-  getmaxyx(stdscr,maxy,maxx);
-  const int margin = MENUMARGIN;
-  for (int i=0;i<n;++i) {
-    printwithattr(i+MENUFIRSTLINE,margin,
-                  A_STANDOUT,"%s",va_arg(args,char*));
-  }
-  va_end(args);
-  refreshwithborder(DKBLKGRN);
-  getch();
-  clear();
-  refreshwithborder(DKBLKGRN);
-}
-
 static void finish(int sig);
 
 int main(int argc, char **argv) {

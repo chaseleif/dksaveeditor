@@ -73,16 +73,24 @@ void getinput() {
     refreshwithborder(DKBLKGRN);
     ch = getch();
     if (isdigit(ch)) {
-      if (writex+1==INPUTSTRSIZE) flash();
+      if (writex+1==INPUTSTRSIZE) {
+        flash();
+        do { ch = getch(); }while(isdigit(ch));
+      }
       else {
         newvalues[writei][writex++] = ch;
         newvalues[writei][writex] = '\0';
+        continue;
       }
     }
-    else switch(ch) {
+    switch(ch) {
       case KEY_RESIZE: clear(); break;
       case KEY_BACKSPACE: case 127: case '\b':
-        if (!writex) flash();
+        if (!writex) {
+          flash();
+          do { ch=getch(); }while(ch==KEY_BACKSPACE);
+          ungetch(ch);
+        }
         else {
           newvalues[writei][--writex] = '\0';
           move(writey,leftx+writex);
