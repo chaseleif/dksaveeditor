@@ -39,6 +39,7 @@ void printerror(const int n, ...) {
   }
   va_end(args);
   refreshwithborder(DKBLKGRN);
+  flushinp();
   getch();
   clear();
   refreshwithborder(DKBLKGRN);
