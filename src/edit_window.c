@@ -37,13 +37,12 @@ static const char attributename[14][8] = {
 static const char skillname[19][5] = {
 "Edge", "Imp", "Fll", "Pol", "Thr", "Bow", "Msl", "Alch", "Relg", "Virt",
 "SpkC", "SpkL", "R&W", "Heal", "Artf", "Stlh", "StrW", "Ride", "WdWs" };
-enum { PARTY, PLAYER, ATTR, SKILL,
-        ITEM, ADDITEM,
-        SAINT, DESCSAINT, ADDSAINT,
-        FORMULA, DESCFORMULA, ADDFORMULA };
+enum { PARTY=0, PLAYER=1, ATTR=2, SKILL=4,
+        ITEM=8, SAINT=16, FORMULA=32 };
+enum { BASE=0, ADD=1, DESC=2 };
 
 static struct character *player = NULL;
-static int saveindex, laststate, state = PARTY, lastindex = 0;
+static int saveindex, state, lastindex;
 
 static void setup_player();
 static void player_enter();
@@ -51,22 +50,119 @@ static void setup_attributes();
 static void attributes_enter();
 static void setup_skills();
 static void skills_enter();
-static void setup_items();
-static void items_enter();
-static void setup_additem();
-static void additem_enter();
-static void setup_saints();
-static void saint_describe();
-static void saints_enter();
-static void setup_addsaint();
-static void addsaint_enter();
-static void addsaint_a();
-static void setup_formulas();
-static void formula_describe();
-static void formulas_enter();
-static void setup_addformula();
-static void addformula_enter();
-static void addformula_a();
+static void setup_addthing();
+static void addthing_enter();
+static void addthing_confirm();
+
+static void setup_thing();
+static void thing_enter();
+static void describe();
+
+static void setup_addthing() {
+  state |= ADD;
+  sprintf(msgstr,"Press \'a\' to add the highlighted %s",
+          (state&ITEM)?"item":(state&SAINT)?"saint":"formula");
+  if (strcmp(msgstr,titlebar)) {
+    strcpy(tmpstr,titlebar);
+    strcpy(titlebar,msgstr);
+  }
+  lastindex = 1;
+  if (state&ITEM) {
+    for (int i=0;i<num_items;++i) {
+      int haveit = 0;
+      for (int x=0;x<player->num_items;++x) {
+        if (player->items[x].code==i) { haveit=1; break; }
+      }
+      if (!haveit)
+        sprintf(menuoptions[lastindex++], "%d: %s", i, items[i].name);
+    }
+  }
+  else if (state&SAINT) {
+    for (int i=0;i<num_saints;++i) {
+      const int byte = i>>3;
+      const int shmt = 7-(i&7);
+      if (!((player->saints_known[byte]>>shmt)&1))
+        sprintf(menuoptions[lastindex++], "%d: %s (%s)",
+                i, saints[i].name, saints[i].short_name);
+    }
+  }
+  else { //if(state&FORMULA) {
+    for (int i=0;i<num_formulas;++i) {
+      const int byte = i/3;
+      const int shmt = i%3;
+      if (!((player->formulas_known[byte]>>shmt)&1))
+        sprintf(menuoptions[lastindex++], "%d: %s (%s) %s",
+                i, formulas[i].name, formulas[i].short_name,
+                (shmt==0)?"q25":(shmt==1)?"q35":"q45");
+    }
+  }
+  sprintf(menuoptions[lastindex++], "Finished adding %s",
+          (state&ITEM)?"items":(state&SAINT)?"saints":"formulas");
+  menuoptions[lastindex--][0] = '\0';
+  menuwidth=0;
+  for (int i=0;i<=lastindex;++i) {
+    if (menuwidth<strlen(menuoptions[i])) menuwidth=strlen(menuoptions[i]);
+  }
+  clear();
+  topy = 0;
+  highlight = 1;
+}
+
+static void addthing_enter() {
+  if (highlight==lastindex) {
+    strcpy(titlebar,tmpstr);
+    state -= ADD;
+    setup_thing();
+    topy = 0;
+    edit_processinput(KEY_END);
+    edit_processinput(KEY_UP);
+    return;
+  }
+  if (state&(SAINT|FORMULA)) {
+    saveindex = highlight;
+    describe();
+  }
+}
+
+static void addthing_confirm() {
+  saveindex = highlight;
+  const int oldtopy = topy;
+  char *colon = strchr(menuoptions[highlight],':');
+  *colon = '\0';
+  highlight = atoi(menuoptions[highlight]);
+  *colon = ':';
+  if (state&ITEM) {
+    player->items[player->num_items].code = highlight;
+    player->items[player->num_items].type = items[highlight].type;
+    player->items[player->num_items].quality = items[highlight].quality;
+    player->items[player->num_items].quantity = 1;
+    player->items[player->num_items].weight = items[highlight].weight;
+    ++player->num_items;
+    if (++player->num_items==64) {
+      printerror(2,"Players are limited to 64 items",
+                    "Unable to add any more items");
+      state -= ADD;
+      setup_thing();
+      edit_processinput(KEY_END);
+      edit_processinput(KEY_UP);
+      return;
+    }
+  }
+  else if (state&SAINT) {
+    const int byte = highlight>>3;
+    const int shmt = 7-(highlight&7);
+    player->saints_known[byte] |= 1<<shmt;
+  }
+  else { //if (state&FORMULA) {
+    const int byte = highlight/3;
+    const int shmt = highlight%3;
+    player->formulas_known[byte] |= 1<<shmt;
+  }
+  setup_addthing();
+  topy = oldtopy;
+  highlight = saveindex;
+  if (highlight==lastindex) edit_processinput(KEY_UP);
+}
 
 void setup_edit() {
   strcpy(menuoptions[0],"Party");
@@ -105,7 +201,9 @@ static int edit_enter() {
   else if (highlight==lastindex-2) {
     loadsave(dksavefile, &players, &saveinfo, &partyinfo);
     setup_edit();
-    scrollto(lastindex-2);
+    edit_processinput(KEY_END);
+    edit_processinput(KEY_UP);
+    edit_processinput(KEY_UP);
     clear();
   }
   // a player, playerindex == highlight-8
@@ -217,13 +315,16 @@ static void player_enter() {
       setup_skills();
       break;
     case 4:
-      setup_items();
+      state = ITEM;
+      setup_thing();
       break;
     case 5:
-      setup_saints();
+      state = SAINT;
+      setup_thing();
       break;
     case 6:
-      setup_formulas();
+      state = FORMULA;
+      setup_thing();
       break;
   }
 }
@@ -273,58 +374,37 @@ static void attributes_enter() {
   scrollto(position);
 }
 
-static void setup_additem() {
-  if (player->num_items==64) {
-    printerror(2,"Players are limited to 64 items",
-                  "Unable to add another item");
-    return;
-  }
-  strcpy(tmpstr, titlebar);
-  strcpy(titlebar,"Add item");
+static void setup_thing() {
   lastindex = 1;
-  for (int i=0;i<num_items;++i) {
-    strcpy(menuoptions[lastindex++],items[i].name);
+  if (state&ITEM) {
+    for (int i=0;i<player->num_items;++i) {
+      sprintf(menuoptions[lastindex++], "%s quality(%u) quantity(%u)",
+              items[player->items[i].code].name,
+              player->items[i].quality, player->items[i].quantity);
+    }
   }
-  strcpy(menuoptions[lastindex++], "Finished adding items");
-  menuoptions[lastindex--][0] = '\0';
-  clear();
-  topy = 0;
-  highlight = 1;
-  state = ADDITEM;
-}
-static void additem_enter() {
-  if (highlight < lastindex && player->num_items==64) {
-    printerror(2,"Players are limited to 64 items",
-                  "Unable to add another item");
-    highlight = lastindex;
+  else if (state&SAINT) {
+    for (int i=0;i<num_saints;++i) {
+      const int byte = i>>3;
+      const int shmt = 7-(i&7);
+      if ((player->saints_known[byte]>>shmt)&1)
+        sprintf(menuoptions[lastindex++], "%d: %s (%s)",
+                i, saints[i].name, saints[i].short_name);
+    }
   }
-  if (highlight==lastindex) {
-    strcpy(titlebar,tmpstr);
-    setup_items();
-    topy = 0;
-    edit_processinput(KEY_END);
-    edit_processinput(KEY_UP);
-    return;
+  else /*if (state&FORMULA)*/ {
+    for (int i=0;i<num_formulas;++i) {
+      const int byte = i/3;
+      const int shmt = i%3;
+      if ((player->formulas_known[byte]>>shmt)&1)
+        sprintf(menuoptions[lastindex++], "%d: %s (%s) %s",
+                i, formulas[i].name, formulas[i].short_name,
+                (shmt==0)?"q25":(shmt==1)?"q35":"q45");
+    }
   }
-  player->items[player->num_items].code = highlight-1;
-  player->items[player->num_items].type = items[highlight-1].type;
-  player->items[player->num_items].quality = items[highlight-1].quality;
-  player->items[player->num_items].quantity = 1;
-  player->items[player->num_items].weight = items[highlight-1].weight;
-  ++player->num_items;
-  sprintf(msgstr, "Added %s\n", items[highlight-1].name);
-  printerror(1, msgstr);
-}
-
-static void setup_items() {
-  lastindex = 1;
-  for (int i=0;i<player->num_items;++i) {
-    sprintf(menuoptions[lastindex++], "%s quality(%u) quantity(%u)",
-            items[player->items[i].code].name,
-            player->items[i].quality, player->items[i].quantity);
-  }
-  strcpy(menuoptions[lastindex++], "Add items");
-  strcpy(menuoptions[lastindex++], "Finished with items");
+  char *type = (state&ITEM)?"items":(state&SAINT)?"saints":"formulas";
+  sprintf(menuoptions[lastindex++], "Add %s", type);
+  sprintf(menuoptions[lastindex++], "Finished with %s", type);
   menuoptions[lastindex--][0] = '\0';
   menuwidth=0;
   for (int i=0;i<=lastindex;++i) {
@@ -333,67 +413,22 @@ static void setup_items() {
   clear();
   topy = 0;
   highlight = 1;
-  state = ITEM;
 }
 
-static void items_enter() {
-  if (highlight==lastindex) {
-    setup_player();
-    highlight=4;
-    return;
-  }
-  if (highlight==lastindex-1) {
-    setup_additem();
-    return;
-  }
-  strcpy(msgstr,items[player->items[highlight-1].code].name);
-  sprintf(field,"Quality:%u/Quantity:%u",
-          player->items[highlight-1].quality,
-          player->items[highlight-1].quantity);
-  getinput();
-  char *value = field;
-  char *end = strchr(value,'.');
-  *end='\0';
-  player->items[highlight-1].quality = atouint8(value);
-  value = end+1;
-  player->items[highlight-1].quantity = atouint8(value);
-  const int position = highlight;
-  setup_items();
-  scrollto(position);
-}
-
-static void setup_saints() {
-  lastindex = 1;
-  for (int i=0;i<num_saints;++i) {
-    const int byte = i>>3;
-    const int shmt = 7-(i&7);
-    if ((player->saints_known[byte]>>shmt)&1)
-      sprintf(menuoptions[lastindex++], "%d: %s (%s)",
-              i, saints[i].name, saints[i].short_name);
-  }
-  strcpy(menuoptions[lastindex++], "Add saints");
-  strcpy(menuoptions[lastindex++], "Finished with saints");
-  menuoptions[lastindex--][0] = '\0';
-  menuwidth=0;
-  for (int i=0;i<=lastindex;++i) {
-    if (menuwidth<strlen(menuoptions[i])) menuwidth=strlen(menuoptions[i]);
-  }
-  clear();
-  topy = 0;
-  highlight = 1;
-  state = SAINT;
-}
-
-static void saint_describe() {
+static void describe() {
+  state |= DESC;
+  strcpy(tmpstr,menuoptions[0]);
+  strcpy(menuoptions[0],menuoptions[highlight]);
   char *start = menuoptions[highlight];
   char *end = strchr(start,':');
   *end = '\0';
-  start = saints[atoi(start)].description;
-  *end = ':';
-  strcpy(tmpstr,menuoptions[0]);
-  strcpy(menuoptions[0],menuoptions[highlight]);
-  end = strchr(start, ' ');
+  if (state&SAINT)
+    start = saints[atoi(start)].description;
+  else
+    start = formulas[atoi(start)].description;
   lastindex = 0;
+  *end = ':';
+  end = strchr(start, ' ');
   while (end) {
     if (end-start > 50) {
       *end='\0';
@@ -405,197 +440,51 @@ static void saint_describe() {
     else end = strchr(end+1, ' ');
   }
   strcpy(menuoptions[++lastindex], start);
-  menuwidth = 0;
-  for (int i=0;i<=lastindex;++i) {
-    if (strlen(menuoptions[i])>menuwidth) menuwidth = strlen(menuoptions[i]);
-  }
   menuoptions[lastindex+1][0] = '\0';
-  topy = 0;
-  highlight = 0;
-  state = DESCSAINT;
-  clear();
-}
-
-static void saints_enter() {
-  if (highlight==lastindex) {
-    setup_player();
-    highlight=5;
-    return;
-  }
-  if (highlight==lastindex-1) {
-    setup_addsaint();
-    return;
-  }
-  laststate = state;
-  saveindex = highlight;
-  saint_describe();
-}
-
-static void setup_addsaint() {
-  strcpy(tmpstr,"Press \'a\' to add the highlighted saint");
-  if (strcmp(tmpstr,titlebar)) {
-    strcpy(msgstr,titlebar);
-    strcpy(titlebar,tmpstr);
-  }
-  lastindex = 1;
-  for (int i=0;i<num_saints;++i) {
-    const int byte = i>>3;
-    const int shmt = 7-(i&7);
-    if (!((player->saints_known[byte]>>shmt)&1))
-      sprintf(menuoptions[lastindex++], "%d: %s (%s)",
-              i, saints[i].name, saints[i].short_name);
-  }
-  strcpy(menuoptions[lastindex++], "Finished adding saints");
-  menuoptions[lastindex--][0] = '\0';
-  menuwidth=0;
-  for (int i=0;i<=lastindex;++i) {
-    if (menuwidth<strlen(menuoptions[i])) menuwidth=strlen(menuoptions[i]);
-  }
-  clear();
-  topy = 0;
-  highlight = 1;
-  state = ADDSAINT;
-}
-
-static void addsaint_enter() {
-  if (highlight==lastindex) {
-    strcpy(titlebar,msgstr);
-    setup_saints();
-    edit_processinput(KEY_END);
-    edit_processinput(KEY_UP);
-    return;
-  }
-  laststate = state;
-  saveindex = highlight;
-  saint_describe();
-}
-
-static void addsaint_a() {
-  saveindex = highlight;
-  char *colon = strchr(menuoptions[highlight],':');
-  *colon = '\0';
-  highlight = atoi(menuoptions[highlight]);
-  *colon = ':';
-  const int byte = highlight>>3;
-  const int shmt = 7-(highlight&7);
-  player->saints_known[byte] |= 1<<shmt;
-  const int oldtopy = topy;
-  setup_addsaint();
-  topy = oldtopy;
-  highlight = saveindex;
-  if (highlight==lastindex) edit_processinput(KEY_UP);
-}
-
-static void setup_formulas() {
-  lastindex = 1;
-  for (int i=0;i<num_formulas;++i) {
-    const int byte = i/3;
-    const int shmt = i%3;
-    if ((player->formulas_known[byte]>>shmt)&1)
-      sprintf(menuoptions[lastindex++], "%d: %s (%s) %s",
-              i, formulas[i].name, formulas[i].short_name,
-              (shmt==0)?"q25":(shmt==1)?"q35":"q45");
-  }
-  strcpy(menuoptions[lastindex++], "Add formulas");
-  strcpy(menuoptions[lastindex++], "Finished with formulas");
-  menuoptions[lastindex--][0] = '\0';
-  menuwidth=0;
-  for (int i=0;i<=lastindex;++i) {
-    if (menuwidth<strlen(menuoptions[i])) menuwidth=strlen(menuoptions[i]);
-  }
-  clear();
-  topy = 0;
-  highlight = 1;
-  state = FORMULA;
-}
-
-static void formula_describe() {
-  strcpy(tmpstr,menuoptions[0]);
-  strcpy(menuoptions[0],menuoptions[highlight]);
-  char *colon = strchr(menuoptions[highlight],':');
-  *colon = '\0';
-  strcpy(menuoptions[1],formulas[atoi(menuoptions[highlight])].description);
-  *colon = ':';
-  menuoptions[2][0] = '\0';
   menuwidth = 0;
-  for (int i=0;i<3;++i) {
+  for (int i=0;i<=lastindex;++i) {
     if (strlen(menuoptions[i])>menuwidth) menuwidth = strlen(menuoptions[i]);
   }
   topy = 0;
   highlight = 0;
-  state = DESCFORMULA;
   clear();
 }
 
-static void formulas_enter() {
+static void thing_enter() {
   if (highlight==lastindex) {
+    const int leavestate = state;
     setup_player();
-    highlight=6;
+    if (leavestate&ITEM) highlight = 4;
+    else if (leavestate&SAINT) highlight=5;
+    else /*if (leavestate&FORMULA)*/ highlight=6;
     return;
   }
+  saveindex = highlight;
   if (highlight==lastindex-1) {
-    setup_addformula();
+    if ((state&ITEM) && player->num_items==64)
+      printerror(2,"Players are limited to 64 items",
+                    "Unable to add any more items");
+    else
+      setup_addthing();
     return;
   }
-  laststate = state;
-  saveindex = highlight;
-  formula_describe();
-}
-
-static void setup_addformula() {
-  strcpy(tmpstr,"Press \'a\' to add the highlighted formula");
-  if (strcmp(tmpstr,titlebar)) {
-    strcpy(msgstr,titlebar);
-    strcpy(titlebar,tmpstr);
+  if (state&(SAINT|FORMULA)) describe();
+  else {
+    strcpy(msgstr,items[player->items[highlight-1].code].name);
+    sprintf(field,"Quality:%u/Quantity:%u",
+            player->items[highlight-1].quality,
+            player->items[highlight-1].quantity);
+    getinput();
+    char *value = field;
+    char *end = strchr(value,'.');
+    *end='\0';
+    player->items[highlight-1].quality = atouint8(value);
+    value = end+1;
+    player->items[highlight-1].quantity = atouint8(value);
+    const int position = highlight;
+    setup_thing();
+    scrollto(position);
   }
-  lastindex = 1;
-  for (int i=0;i<num_formulas;++i) {
-    const int byte = i/3;
-    const int shmt = i%3;
-    if (!((player->formulas_known[byte]>>shmt)&1))
-      sprintf(menuoptions[lastindex++], "%d: %s (%s) %s",
-              i, formulas[i].name, formulas[i].short_name,
-              (shmt==0)?"q25":(shmt==1)?"q35":"q45");
-  }
-  strcpy(menuoptions[lastindex++], "Finished adding formulas");
-  menuoptions[lastindex--][0] = '\0';
-  menuwidth=0;
-  for (int i=0;i<=lastindex;++i) {
-    if (menuwidth<strlen(menuoptions[i])) menuwidth=strlen(menuoptions[i]);
-  }
-  clear();
-  topy = 0;
-  highlight = 1;
-  state = ADDFORMULA;
-}
-
-static void addformula_enter() {
-  if (highlight==lastindex) {
-    strcpy(titlebar,msgstr);
-    setup_formulas();
-    edit_processinput(KEY_END);
-    edit_processinput(KEY_UP);
-    return;
-  }
-  laststate = state;
-  saveindex = highlight;
-  formula_describe();
-}
-
-static void addformula_a() {
-  saveindex = highlight;
-  char *colon = strchr(menuoptions[highlight],':');
-  *colon = '\0';
-  highlight = atoi(menuoptions[highlight]);
-  *colon = ':';
-  const int byte = highlight/3;
-  const int shmt = highlight%3;
-  player->formulas_known[byte] |= 1<<shmt;
-  const int oldtopy = topy;
-  setup_addformula();
-  topy = oldtopy;
-  highlight = saveindex;
-  if (highlight==lastindex) edit_processinput(KEY_UP);
 }
 
 static void setup_skills() {
@@ -635,31 +524,26 @@ static void skills_enter() {
 }
 
 int edit_processinput(const int ch) {
-  if (state == DESCSAINT || state == DESCFORMULA) {
+  if ((state&(SAINT|FORMULA)) && (state&DESC)) {
     switch(ch) {
       case KEY_RESIZE: clear(); break;
       case KEY_RESET: case KEY_BREAK: case KEY_CANCEL: case KEY_EXIT: case 27:
       case 4: case 'q': case 'Q': case 'c': case 'C':
       case KEY_ENTER: case '\n':
+        state -= DESC;
         strcpy(menuoptions[0],tmpstr);
-        switch(laststate) {
-          case SAINT: setup_saints(); break;
-          case ADDSAINT: setup_addsaint(); break;
-          case FORMULA: setup_formulas(); break;
-          case ADDFORMULA: setup_addformula(); break;
-        }
+        if (state&ADD)
+          setup_addthing();
+        else
+          setup_thing();
         scrollto(saveindex);
         break;
     }
     return EDITMENU;
   }
   if (highlight != lastindex && (ch=='a' || ch=='A')) {
-    if (state == ADDSAINT) {
-      addsaint_a();
-      return EDITMENU;
-    }
-    if (state == ADDFORMULA) {
-      addformula_a();
+    if ((state&(ITEM|SAINT|FORMULA)) && (state&ADD)) {
+      addthing_confirm();
       return EDITMENU;
     }
   }
@@ -697,6 +581,11 @@ int edit_processinput(const int ch) {
       break;
     case KEY_RESET: case KEY_BREAK: case KEY_CANCEL: case KEY_EXIT: case 27:
     case 4: case 'q': case 'Q': case 'c': case 'C':
+      if ((state&(ITEM|SAINT|FORMULA)) && (state&ADD)) {
+        highlight=lastindex;
+        addthing_enter();
+        return EDITMENU;
+      }
       switch(state) {
         case PARTY: return PREPMENU;
         case PLAYER:
@@ -715,20 +604,17 @@ int edit_processinput(const int ch) {
         case ITEM: position = 4; topy = 0; break;
         case SAINT: position = 5; topy = 0; break;
         case FORMULA: position = 6; topy = 0; break;
-        case ADDSAINT:
-          highlight=lastindex;
-          addsaint_enter();
-          return EDITMENU;
-        case ADDFORMULA:
-          highlight = lastindex;
-          addformula_enter();
-          return EDITMENU;
+        default: break;
       }
       setup_player();
       scrollto(position);
       break;
     case KEY_ENTER: case '\n':
-      switch(state) {
+      if (state&(ITEM|SAINT|FORMULA)) {
+        if (state&ADD) addthing_enter();
+        else thing_enter();
+      }
+      else switch(state) {
         case PARTY:
           return edit_enter();
         case PLAYER:
@@ -737,18 +623,6 @@ int edit_processinput(const int ch) {
           attributes_enter(); break;
         case SKILL:
           skills_enter(); break;
-        case ITEM:
-          items_enter(); break;
-        case ADDITEM:
-          additem_enter(); break;
-        case SAINT:
-          saints_enter(); break;
-        case ADDSAINT:
-          addsaint_enter(); break;
-        case FORMULA:
-          formulas_enter(); break;
-        case ADDFORMULA:
-          addformula_enter(); break;
         default: break;
       }
       break;
