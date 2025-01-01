@@ -43,7 +43,7 @@ int main(int argc,char **argv) {
     return print_usage(argv[0]);
   dkdir = malloc(sizeof(char)*MAXSTRLEN);
   msgstr = malloc(sizeof(char)*MAXSTRLEN);
-  strcpy(dkdir,argv[1]);
+  strncpy(dkdir,argv[1],MAXSTRLEN);
   load_darklands_data();
   free(dkdir);
   free(msgstr);

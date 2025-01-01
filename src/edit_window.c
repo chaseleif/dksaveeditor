@@ -31,10 +31,10 @@ extern struct formula *formulas;
 extern struct savefileheader saveinfo;
 extern struct partyheader partyinfo;
 
-static const char const attributename[14][8] = {
+static const char attributename[14][8] = {
 "End", "Str", "Agl", "Per", "Int", "Chr", " DF",
 "Max End", "Max Str", "Max Agl", "Max Per", "Max Int", "Max Chr", "Max DR " };
-static const char const skillname[19][5] = {
+static const char skillname[19][5] = {
 "Edge", "Imp", "Fll", "Pol", "Thr", "Bow", "Msl", "Alch", "Relg", "Virt",
 "SpkC", "SpkL", "R&W", "Heal", "Artf", "Stlh", "StrW", "Ride", "WdWs" };
 enum { PARTY, PLAYER, ATTR, SKILL,
@@ -50,7 +50,7 @@ static void player_enter();
 static void setup_attributes();
 static void attributes_enter();
 static void setup_skills();
-static void skill_enter();
+static void skills_enter();
 static void setup_items();
 static void items_enter();
 static void setup_additem();
@@ -644,7 +644,7 @@ int edit_processinput(const int ch) {
       return EDITMENU;
     }
   }
-  int maxy, maxx;
+  int maxy, maxx, position=1;
   getmaxyx(stdscr,maxy,maxx);
   switch(ch) {
     case KEY_RESIZE: clear(); break;
@@ -678,7 +678,6 @@ int edit_processinput(const int ch) {
       break;
     case KEY_RESET: case KEY_BREAK: case KEY_CANCEL: case KEY_EXIT: case 27:
     case 4: case 'q': case 'Q': case 'c': case 'C':
-      int position = 1;
       switch(state) {
         case PARTY: return PREPMENU;
         case PLAYER:

@@ -21,6 +21,14 @@ char **menuoptions;
 int topy, nrows, menuwidth, highlight;
 uint8_t num_items, num_saints, num_formulas;
 
+char *copystr(char *in) {
+  char *out = malloc(sizeof(char)*(strlen(in)+1));
+  for (int i=0; ;++i) {
+    out[i] = in[i];
+    if (in[i]=='\0') break;
+  }
+  return out;
+}
 
 void printerror(const int n, ...) {
   va_list args;
@@ -154,7 +162,7 @@ int main(int argc, char **argv) {
           processinput = &edit_processinput;
           break;
         default:
-          printerror(1, "Oh no, menulevel not caught");
+          processinput = &main_processinput;
           menulevel = EXIT;
         break;
       }

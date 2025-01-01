@@ -64,12 +64,18 @@ void setup_file() {
         menuoptions[nrows][i] = '\0';
       }
       else
-        snprintf(menuoptions[nrows], MAXSTRLEN-1, "%s/%s",
+        snprintf(menuoptions[nrows], MAXSTRLEN, "%s/%s",
                 strdst, de->d_name);
     }
     else
-      snprintf(menuoptions[nrows], MAXSTRLEN-1, "%s/%s",
+      snprintf(menuoptions[nrows], MAXSTRLEN, "%s/%s",
               strdst, de->d_name);
+    if (!isdirectory(menuoptions[nrows]) && !isfile(menuoptions[nrows])) {
+      printerror(3, "Unable to add file or directory to list",
+                    "Path could have been truncated due to length",
+                    menuoptions[nrows--]);
+      continue;
+    }
     if (need_data) {
       if (!isdirectory(menuoptions[nrows])) {
         --nrows;

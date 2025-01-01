@@ -19,16 +19,16 @@ void getinput() {
   }
   else {
     *walk = '\0';
-    descriptions[0] = strdup(field);
+    descriptions[0] = copystr(field);
     ++walk;
   }
   char *start = walk;
   walk = strchr(walk,'/');
   if (!walk)
-    values[0] = strdup(start);
+    values[0] = copystr(start);
   if (walk) {
     *walk = '\0';
-    values[0] = strdup(start);
+    values[0] = copystr(start);
     start = ++walk;
     walk = strchr(walk, ':');
     if (!walk) {
@@ -37,13 +37,13 @@ void getinput() {
     }
     else {
       *walk = '\0';
-      descriptions[1] = strdup(start);
+      descriptions[1] = copystr(start);
       start = walk+1;
     }
-    values[1] = strdup(start);
+    values[1] = copystr(start);
   }
-  newvalues[0] = strdup(values[0]);
-  if (num_values==2) newvalues[1] = strdup(values[1]);
+  newvalues[0] = copystr(values[0]);
+  if (num_values==2) newvalues[1] = copystr(values[1]);
   clear();
   int ch;
   show_cursor();

@@ -123,7 +123,7 @@ struct savefileheader {
   uint8_t unkn10;
   uint8_t party_leader_index;
   uint8_t unkn11[3];
-  uint8_t unkn[74];
+  uint8_t unkn12[74];
 };
 
 struct partyheader {

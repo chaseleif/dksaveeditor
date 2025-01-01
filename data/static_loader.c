@@ -13,15 +13,15 @@ extern struct formula *formulas;
 void load_static_darklands_data() {
   int readi = 0;
   num_items = darklands_data[readi++];
-  items = calloc(num_items,sizeof(struct item_definition));
+  items = malloc(sizeof(struct item_definition)*num_items);
   memcpy(items,darklands_data+readi,sizeof(struct item_definition)*num_items);
   readi += sizeof(struct item_definition)*num_items;
   num_saints = darklands_data[readi++];
-  saints = calloc(num_saints,sizeof(struct saint));
+  saints = malloc(sizeof(struct saint)*num_saints);
   memcpy(saints,darklands_data+readi,sizeof(struct saint)*num_saints);
   readi += sizeof(struct saint)*num_saints;
   num_formulas = darklands_data[readi++];
-  formulas = calloc(num_formulas,sizeof(struct formula));
+  formulas = malloc(sizeof(struct formula)*num_formulas);
   memcpy(formulas,darklands_data+readi,sizeof(struct formula)*num_formulas);
 }
 

@@ -34,9 +34,9 @@ If you want to save changes,
 the save option will overwrite the selected name that was opened.
 
 ## Features
-This program will open a saved game and allows you to view and edit values:
-- Edit party and player stats
-- Edit player items' quality and quantity
+This program will open a saved game and allows you to:
+- View and edit party and player stats
+- View and edit player items' quality and quantity
 - Add items
 - View, add, and read descriptions of saints
 - View, add, and read descriptions of formulas
