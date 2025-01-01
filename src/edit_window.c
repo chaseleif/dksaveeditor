@@ -108,7 +108,7 @@ static int edit_enter() {
     scrollto(lastindex-2);
     clear();
   }
-  // a player, playerindex == highlight-7
+  // a player, playerindex == highlight-8
   else if (highlight>=8) {
     player = &players[highlight-8];
     setup_player();
@@ -159,7 +159,7 @@ static int edit_enter() {
     }
     else if (dst == &saveinfo.party_money.groschen) {
       const uint16_t groschen = saveinfo.party_money.groschen % 20;
-      const uint16_t florin = groschen/20;
+      const uint16_t florin = saveinfo.party_money.groschen/20;
       saveinfo.party_money.groschen = groschen;
       saveinfo.party_money.florin += florin;
     }
