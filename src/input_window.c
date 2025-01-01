@@ -10,7 +10,7 @@ extern char *field, *titlebar, *msgstr;
 
 void getinput() {
   char empty = '\0';
-  char *walk = strchr(field,'/');
+  char *start, *walk = strchr(field,'/');
   const int num_values = (walk)?2:1;
   char **descriptions = malloc(sizeof(char*)*num_values);
   char **values = malloc(sizeof(char*)*num_values);
@@ -24,13 +24,10 @@ void getinput() {
     descriptions[0] = field;
     ++walk;
   }
-  char *start = walk;
-  walk = strchr(walk,'/');
-  if (!walk)
-    values[0] = start;
-  else {
+  values[0] = start = walk;
+  if (num_values==2) {
+    walk = strchr(walk,'/');
     *walk = '\0';
-    values[0] = start;
     start = ++walk;
     walk = strchr(walk, ':');
     if (!walk)
@@ -98,8 +95,7 @@ void getinput() {
         ch = -1;
         break;
       case KEY_ENTER: case '\n':
-        ch = 0;
-        for (int i=0;i<num_values;++i) { if (strlen(values[i])==0) ch=-1; }
+        ch = (*values[0]=='\0')?-1:(num_values==1)?0:(*values[1]=='\0')?-1:0;
         break;
       case KEY_UP:
         if (writei > 0) --writei;
