@@ -102,7 +102,9 @@ void getinput() {
         ch = -1;
         break;
       case KEY_ENTER: case '\n':
-        ch = (*values[0]=='\0')?-1:(num_values==1)?0:(*values[1]=='\0')?-1:0;
+        ch = (*newvalues[0]=='\0')?-1:
+              (num_values==1)?0:
+              (*newvalues[1]=='\0')?-1:0;
         break;
       case KEY_UP:
         if (writei > 0) --writei;
