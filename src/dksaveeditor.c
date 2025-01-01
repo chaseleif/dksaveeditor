@@ -22,11 +22,8 @@ int topy, nrows, menuwidth, highlight;
 uint8_t num_items, num_saints, num_formulas;
 
 char *copystr(char *in) {
-  char *out = malloc(sizeof(char)*(strlen(in)+1));
-  for (int i=0; ;++i) {
-    out[i] = in[i];
-    if (in[i]=='\0') break;
-  }
+  char *out = calloc(strlen(in)+1,sizeof(char));
+  memcpy(out,in,strlen(in));
   return out;
 }
 
