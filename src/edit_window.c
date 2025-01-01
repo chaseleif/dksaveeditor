@@ -144,6 +144,21 @@ static int edit_enter() {
     sprintf(field,"%u",*dst);
     getinput();
     *dst = (uint16_t)atoi(field);
+    if (dst == &saveinfo.party_money.pfennig) {
+      uint16_t pfennig = saveinfo.party_money.pfennig%12;
+      uint16_t groschen = saveinfo.party_money.pfennig/12;
+      uint16_t florin = groschen/20;
+      groschen %= 20;
+      saveinfo.party_money.pfennig = pfennig;
+      saveinfo.party_money.groschen += groschen;
+      saveinfo.party_money.florin += florin;
+    }
+    else if (dst == &saveinfo.party_money.groschen) {
+      const uint16_t groschen = saveinfo.party_money.groschen % 20;
+      const uint16_t florin = groschen/20;
+      saveinfo.party_money.groschen = groschen;
+      saveinfo.party_money.florin += florin;
+    }
     const int position = highlight;
     setup_edit();
     scrollto(position);
