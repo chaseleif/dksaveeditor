@@ -137,7 +137,6 @@ static void addthing_confirm() {
     player->items[player->num_items].quality = items[highlight].quality;
     player->items[player->num_items].quantity = 1;
     player->items[player->num_items].weight = items[highlight].weight;
-    ++player->num_items;
     if (++player->num_items==64) {
       printerror(2,"Players are limited to 64 items",
                     "Unable to add any more items");
