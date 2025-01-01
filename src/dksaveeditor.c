@@ -61,7 +61,7 @@ int main(int argc, char **argv) {
   field = malloc(sizeof(char)*MAXSTRLEN);
   tmpstr = malloc(sizeof(char)*MAXSTRLEN);
   load_static_darklands_data();
-  
+
   int lastmenu=EXIT, menulevel=MAINMENU;
   int (*processinput)(const int);
   do {
@@ -126,7 +126,11 @@ int main(int argc, char **argv) {
             case 9: strcpy(msgstr,"Oktober"); break;
             case 10: strcpy(msgstr,"November"); break;
             case 11: strcpy(msgstr,"Dezember"); break;
-            default: strcpy(msgstr,"ERROR"); break;
+            default:
+              strcpy(msgstr,"???");
+              printerror(2,"The month value is out-of-bounds",
+                            "The save file chosen is likely corrupted");
+              break;
           }
           sprintf(titlebar,"Save \"%s\", der %d. %s %d um %u Uhr bei %s",
                   saveinfo.save_game_label,
@@ -136,6 +140,7 @@ int main(int argc, char **argv) {
           processinput = &edit_processinput;
           break;
         default:
+          printerror(1, "Unexpected transition, fatal error in the program");
           processinput = &main_processinput;
           menulevel = EXIT;
         break;
