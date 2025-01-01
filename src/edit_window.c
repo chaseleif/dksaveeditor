@@ -145,12 +145,11 @@ static int edit_enter() {
     getinput();
     *dst = (uint16_t)atoi(field);
     if (dst == &saveinfo.party_money.pfennig) {
-      uint16_t pfennig = saveinfo.party_money.pfennig%12;
-      uint16_t groschen = saveinfo.party_money.pfennig/12;
-      uint16_t florin = groschen/20;
-      groschen %= 20;
+      const uint16_t pfennig = saveinfo.party_money.pfennig%12;
+      const uint16_t groschen = saveinfo.party_money.pfennig/12;
+      const uint16_t florin = groschen/20;
       saveinfo.party_money.pfennig = pfennig;
-      saveinfo.party_money.groschen += groschen;
+      saveinfo.party_money.groschen += groschen%20;
       saveinfo.party_money.florin += florin;
     }
     else if (dst == &saveinfo.party_money.groschen) {
