@@ -82,6 +82,7 @@ void getinput() {
         continue;
       }
     }
+    int badchar;
     switch(ch) {
       case KEY_RESIZE: clear(); break;
       case KEY_BACKSPACE: case 127: case '\b':
@@ -111,7 +112,25 @@ void getinput() {
         if (writei == 1) writei=0;
         else if (num_values==2) writei=1;
         break;
-      default: break;
+      default:
+        do {
+          badchar = 0;
+          ch=getch();
+          if (isdigit(ch)) { }
+          else switch(ch) {
+            case KEY_RESIZE: case KEY_BACKSPACE: case 127: case '\b':
+            case KEY_RESET: case KEY_BREAK: case KEY_CANCEL: case KEY_EXIT:
+            case 27: case 4: case 'q': case 'Q': case 'c': case 'C':
+            case KEY_ENTER: case KEY_UP: case KEY_DOWN:
+              break;
+            default:
+              badchar=1;
+              break;
+          }
+        }while(badchar);
+        if (ch==KEY_RESIZE) clear();
+        else ungetch(ch);
+        break;
     }
   }while(ch>0);
   hide_cursor();
