@@ -4,8 +4,6 @@
 #include <ncurses.h>
 #include "shared.h"
 
-extern int menuwidth;
-
 uint8_t atouint8(char *a) {
   uint16_t ret = 0;
   for (int i=strlen(a)-1,mult=1;i>=0;--i,mult*=10) {
@@ -32,12 +30,12 @@ void printerror(const int n, ...) {
   va_list args;
   va_start(args, n);
   clear();
-  int maxy, maxx;
-  getmaxyx(stdscr,maxy,maxx);
-  const int margin = MENUMARGIN;
   for (int i=0;i<n;++i) {
-    printwithattr(i+MENUFIRSTLINE,margin,
-                  A_STANDOUT,"%s",va_arg(args,char*));
+    char *s = va_arg(args,char*);
+    const int menuwidth = strlen(s);
+    int maxy,maxx;
+    getmaxyx(stdscr,maxy,maxx);
+    printwithattr(i+MENUFIRSTLINE,MENUMARGIN,A_STANDOUT,"%s",s);
   }
   va_end(args);
   refreshwithborder(DKBLKGRN);
