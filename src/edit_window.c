@@ -76,7 +76,8 @@ void setup_edit() {
   sprintf(menuoptions[4],"Bank notes: %u",saveinfo.bank_notes);
   sprintf(menuoptions[5],"Reputation: %u",saveinfo.reputation);
   sprintf(menuoptions[6],"Philosopher Stone: %u",saveinfo.philosopher_stone);
-  lastindex=7;
+  sprintf(menuoptions[7],"City contents seed: %u",saveinfo.city_contents_seed);
+  lastindex=8;
   for (int i=0;i<partyinfo.num_curr_characters;++i) {
     sprintf(menuoptions[lastindex++],"%s (%s) age %u",
             players[i].name, players[i].short_name, players[i].age);
@@ -108,8 +109,8 @@ static int edit_enter() {
     clear();
   }
   // a player, playerindex == highlight-7
-  else if (highlight>=7) {
-    player = &players[highlight-7];
+  else if (highlight>=8) {
+    player = &players[highlight-8];
     setup_player();
     clear();
   }
@@ -139,6 +140,10 @@ static int edit_enter() {
       case 6:
         strcpy(msgstr,"Party philosopher stone");
         dst = &saveinfo.philosopher_stone;
+        break;
+      case 7:
+        strcpy(msgstr,"City contents random seed");
+        dst = &saveinfo.city_contents_seed;
         break;
     }
     sprintf(field,"%u",*dst);
@@ -190,7 +195,7 @@ static void player_enter() {
     setup_edit();
     for (int i=0;i<partyinfo.num_curr_characters;++i) {
       if (player == &players[i]) {
-        highlight = 7+i;
+        highlight = 8+i;
         break;
       }
     }
@@ -698,7 +703,7 @@ int edit_processinput(const int ch) {
           setup_edit();
           for (int i=0;i<partyinfo.num_curr_characters;++i) {
             if (player == &players[i]) {
-              position = 7+i;
+              position = 8+i;
               break;
             }
           }
