@@ -4,46 +4,50 @@
 #include <ncurses.h>
 #include "shared.h"
 
+#define INPUTSTRSIZE 16
+
 extern char *field, *titlebar, *msgstr;
 
 void getinput() {
+  char empty = '\0';
   char *walk = strchr(field,'/');
   const int num_values = (walk)?2:1;
   char **descriptions = malloc(sizeof(char*)*num_values);
   char **values = malloc(sizeof(char*)*num_values);
   char **newvalues = malloc(sizeof(char*)*num_values);
   if (!(walk=strchr(field,':'))) {
-    descriptions[0] = malloc(sizeof(char));
-    descriptions[0][0] = '\0';
+    descriptions[0] = &empty;
     walk = field;
   }
   else {
     *walk = '\0';
-    descriptions[0] = copystr(field);
+    descriptions[0] = field;
     ++walk;
   }
   char *start = walk;
   walk = strchr(walk,'/');
   if (!walk)
-    values[0] = copystr(start);
-  if (walk) {
+    values[0] = start;
+  else {
     *walk = '\0';
-    values[0] = copystr(start);
+    values[0] = start;
     start = ++walk;
     walk = strchr(walk, ':');
-    if (!walk) {
-      descriptions[1] = malloc(sizeof(char));
-      descriptions[1][0] = '\0';
-    }
+    if (!walk)
+      descriptions[1] = &empty;
     else {
       *walk = '\0';
-      descriptions[1] = copystr(start);
+      descriptions[1] = start;
       start = walk+1;
     }
-    values[1] = copystr(start);
+    values[1] = start;
   }
-  newvalues[0] = copystr(values[0]);
-  if (num_values==2) newvalues[1] = copystr(values[1]);
+  newvalues[0] = malloc(sizeof(char)*INPUTSTRSIZE);
+  sprintf(newvalues[0],"%s",values[0]);
+  if (num_values==2) {
+    newvalues[1] = malloc(sizeof(char)*INPUTSTRSIZE);
+    sprintf(newvalues[1],"%s",values[1]);
+  }
   clear();
   int ch;
   show_cursor();
@@ -72,8 +76,11 @@ void getinput() {
     refreshwithborder(DKBLKGRN);
     ch = getch();
     if (isdigit(ch)) {
-      newvalues[writei][writex++] = ch;
-      newvalues[writei][writex] = '\0';
+      if (writex+1==INPUTSTRSIZE) flash();
+      else {
+        newvalues[writei][writex++] = ch;
+        newvalues[writei][writex] = '\0';
+      }
     }
     else switch(ch) {
       case KEY_RESIZE: clear(); break;
@@ -114,11 +121,7 @@ void getinput() {
     if (num_values==1) strcpy(field, newvalues[0]);
     else sprintf(field, "%s.%s", newvalues[0], newvalues[1]);
   }
-  for (int i=0;i<num_values;++i) {
-    free(descriptions[i]);
-    free(values[i]);
-    free(newvalues[i]);
-  }
+  for (int i=0;i<num_values;++i) { free(newvalues[i]); }
   free(descriptions);
   free(values);
   free(newvalues);

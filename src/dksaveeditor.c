@@ -21,12 +21,6 @@ char **menuoptions;
 int topy, nrows, menuwidth, highlight;
 uint8_t num_items, num_saints, num_formulas;
 
-char *copystr(char *in) {
-  char *out = calloc(strlen(in)+1,sizeof(char));
-  memcpy(out,in,strlen(in));
-  return out;
-}
-
 void printerror(const int n, ...) {
   va_list args;
   va_start(args, n);

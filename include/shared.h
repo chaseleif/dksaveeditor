@@ -65,7 +65,6 @@ enum { EXIT, MAINMENU, ABOUTMENU, PREPMENU, FILEMENU, EDITMENU };
 enum { DKBLKGRN=1, DKBLKCYN, DKBLKRED, DKWHTBLK, DKWHTBLU,
         DKCYNBLU, DKCYNBLK, DKGRNBLK, DKREDBLK, DKREDCYN, DKBLUWHT };
 
-char *copystr(char *in);
 void getinput();
 void printerror(const int n, ...);
 
