@@ -16,26 +16,26 @@
     unsetcolor(C);            \
     refresh();                \
   }while(0)
-// print at X,Y using color C with format F and args
-#define printcolor(X,Y,C,F,...)   \
+// print at Y,X using color C with format F and args
+#define printcolor(Y,X,C,F,...)   \
   do {                            \
     setcolor(C);                  \
-    mvprintw(X,Y,F,__VA_ARGS__);  \
+    mvprintw(Y,X,F,__VA_ARGS__);  \
     unsetcolor(C);                \
   }while(0)
-// print with attribute A at X,Y with format F and args
-#define printwithattr(X,Y,A,F,...)  \
+// print with attribute A at Y,X with format F and args
+#define printwithattr(Y,X,A,F,...)  \
   do {                              \
     attron(A);                      \
-    mvprintw(X,Y,F,__VA_ARGS__);    \
+    mvprintw(Y,X,F,__VA_ARGS__);    \
     attroff(A);                     \
   }while(0)
 // As above, using both attribute A and color C
-#define printwithattrandcolor(X,Y,A,C,F,...)  \
+#define printwithattrandcolor(Y,X,A,C,F,...)  \
   do {                                        \
     setcolor(C);                              \
     attron(A);                                \
-    mvprintw(X,Y,F,__VA_ARGS__);              \
+    mvprintw(Y,X,F,__VA_ARGS__);              \
     attroff(A);                               \
     unsetcolor(C);                            \
   }while(0)

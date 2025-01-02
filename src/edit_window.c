@@ -253,7 +253,7 @@ static int edit_enter() {
       saveinfo.party_money.pfennig = pfennig;
       saveinfo.party_money.groschen += groschen%20;
       saveinfo.party_money.florin += florin;
-      saveinfo.party_money.florin += self.party_money.groschen/20;
+      saveinfo.party_money.florin += saveinfo.party_money.groschen/20;
       saveinfo.party_money.groschen %= 20;
     }
     else if (dst == &saveinfo.party_money.groschen) {
