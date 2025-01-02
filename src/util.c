@@ -4,6 +4,13 @@
 #include <ncurses.h>
 #include "shared.h"
 
+uint8_t rgb2vga(const uint8_t rgb) {
+  return rgb>>2;
+}
+uint8_t vga2rgb(const uint8_t vga) {
+  return (vga<<2)|(vga>>4);
+}
+
 uint8_t atouint8(char *a) {
   uint16_t ret = 0;
   for (int i=strlen(a)-1,mult=1;i>=0;--i,mult*=10) {

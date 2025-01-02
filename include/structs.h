@@ -81,15 +81,24 @@ struct character {
   struct item items[64];
 };
 
+// wallace.net notes indicate colors range from 0x00 to 0x3f
+// this is 6-bit VGA
+// https://moddingwiki.shikadi.net/wiki/VGA_Palette
+struct rgb {
+  uint8_t red;
+  uint8_t green;
+  uint8_t blue;
+};
+
 struct person_colors {
-  uint8_t first_hi[3];
-  uint8_t first_lo[3];
-  uint8_t second_hi[3];
-  uint8_t second_med[3];
-  uint8_t second_lo[3];
-  uint8_t third_hi[3];
-  uint8_t third_med[3];
-  uint8_t third_lo[3];
+  struct rgb first_hi;
+  struct rgb first_lo;
+  struct rgb second_hi;
+  struct rgb second_med;
+  struct rgb second_lo;
+  struct rgb third_hi;
+  struct rgb third_med;
+  struct rgb third_lo;
 };
 
 // Beginning of save file
@@ -130,7 +139,7 @@ struct partyheader {
   uint16_t num_curr_characters;
   uint16_t num_characters;
   uint16_t party_char_indices[5];
-  uint32_t party_images[5];
+  char party_images[5][4];
   struct person_colors party_colors[5];
 };
 
