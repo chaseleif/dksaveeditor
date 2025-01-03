@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
+#include <dirent.h>
 #include <sys/stat.h>
 #include "structs.h"
 #include "shared.h"
@@ -201,13 +202,24 @@ void parse_formulas() {
 }
 
 void load_darklands_data() {
-  char filename[MAXSTRLEN];
-  snprintf(filename,MAXSTRLEN,"%s/DARKLAND.LST", dkdir);
-  lstfile = fopen(filename, "rb");
-  snprintf(filename,MAXSTRLEN,"%s/DARKLAND.SNT", dkdir);
-  sntfile = fopen(filename, "rb");
-  snprintf(filename,MAXSTRLEN,"%s/DARKLAND.ALC", dkdir);
-  alcfile = fopen(filename, "rb");
+  struct dirent *de;
+  DIR *dr = opendir(dkdir);
+  while (!lstfile || !sntfile || !alcfile) {
+    if (!(de=readdir(dr))) break;
+    char filename[MAXSTRLEN];
+    if (!lstfile && !istrcmp(de->d_name,"DARKLAND.LST")) {
+      snprintf(filename,MAXSTRLEN,"%s/%s", dkdir, de->d_name);
+      lstfile = fopen(filename, "rb");
+    }
+    else if (!sntfile && !istrcmp(de->d_name,"DARKLAND.SNT")) {
+      snprintf(filename,MAXSTRLEN,"%s/%s", dkdir, de->d_name);
+      sntfile = fopen(filename, "rb");
+    }
+    else if (!alcfile && !istrcmp(de->d_name,"DARKLAND.ALC")) {
+      snprintf(filename,MAXSTRLEN,"%s/%s", dkdir, de->d_name);
+      alcfile = fopen(filename, "rb");
+    }
+  }
   if (!lstfile || !sntfile || !alcfile)
     ERROR(nullptr, "Unable to open Darkland data files");
   parse_items();

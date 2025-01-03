@@ -65,6 +65,8 @@ enum { EXIT, MAINMENU, ABOUTMENU, PREPMENU, FILEMENU, EDITMENU };
 enum { DKBLKGRN=1, DKBLKCYN, DKBLKRED, DKWHTBLK, DKWHTBLU,
         DKCYNBLU, DKCYNBLK, DKGRNBLK, DKREDBLK, DKREDCYN, DKBLUWHT };
 
+int istrcmp(char *a, char*b);
+int istrncmp(char *a, char *b, int n);
 uint8_t atouint8(char *a);
 uint16_t atouint16(char *a);
 void getinput();

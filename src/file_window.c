@@ -37,15 +37,15 @@ void setup_file() {
   int havelst=0, havealc=0, havesnt=0;
   while ((de=readdir(dr))) {
     if (!strcmp(de->d_name,".")) continue;
-    if (!strcmp(de->d_name,"DARKLAND.LST")) {
+    if (!istrcmp(de->d_name,"DARKLAND.LST")) {
       havelst=1;
       continue;
     }
-    if (!strcmp(de->d_name,"DARKLAND.ALC")) {
+    if (!istrcmp(de->d_name,"DARKLAND.ALC")) {
       havealc=1;
       continue;
     }
-    if (!strcmp(de->d_name,"DARKLAND.SNT")) {
+    if (!istrcmp(de->d_name,"DARKLAND.SNT")) {
       havesnt=1;
       continue;
     }
@@ -83,13 +83,13 @@ void setup_file() {
       }
     }
     else if (!isdirectory(menuoptions[nrows])) {
-      if (strncmp(de->d_name,"DKSAVE",6)) {
+      if (istrncmp(de->d_name,"DKSAVE",6)) {
         --nrows;
         continue;
       }
       char *ext = strchr(de->d_name,'.');
       if (!ext) { --nrows; continue; }
-      if (strcmp(++ext,"SAV")) { --nrows; continue; }
+      if (istrcmp(++ext,"SAV")) { --nrows; continue; }
     }
   }
   if (need_data && havelst && havealc && havesnt) {
