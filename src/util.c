@@ -62,8 +62,6 @@ uint16_t atouint16(char *a) {
   return ret;
 }
 
-#ifndef NO_NCURSES
-
 void printerror(const int n, ...) {
   va_list args;
   va_start(args, n);
@@ -87,5 +85,3 @@ void printerror(const int n, ...) {
   clear();
   refreshwithborder(DKBLKGRN);
 }
-
-#endif //NO_NCURSES

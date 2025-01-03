@@ -7,7 +7,7 @@ OBJDIR:=obj
 OBJS:=$(patsubst $(SRCDIR)/%.c, $(OBJDIR)/%.o, $(SRCS))
 DATADIR:=data
 DATALOADER:=dataloader
-DATALOADERSRC:=$(DATADIR)/dataloader.c $(SRCDIR)/fileio.c $(SRCDIR)/util.c
+DATALOADERSRC:=$(DATADIR)/dataloader.c $(SRCDIR)/fileio.c
 DATAOUTPUT:=darklands.data
 DATASRCIN:=$(DATADIR)/static_loader.c
 DATASRCOUT:=$(SRCDIR)/darklands_data.c
@@ -29,7 +29,7 @@ $(OBJDIR):
 else
 $(OBJDIR):
 	mkdir $(OBJDIR)
-	$(CC) $(CFLAGS) $(DATALOADERSRC) -DNO_NCURSES -o $(DATALOADER)
+	$(CC) $(CFLAGS) $(DATALOADERSRC) -o $(DATALOADER)
 	./$(DATALOADER) $(DARKLANDS)
 	cp $(DATASRCIN) $(DATASRCOUT)
 	xxd -i $(DATAOUTPUT) | head --lines=-1 >> $(DATASRCOUT)

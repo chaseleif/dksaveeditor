@@ -20,6 +20,22 @@ saint *saints;
 formula *formulas;
 
 static int error=0;
+
+int istrcmp(char *a, char*b) {
+  if (strlen(a)!=strlen(b)) return 1;
+  while (*a) {
+    if (*a != *b) {
+      char c=*a,d=*b;
+      if (c>='A' && c<='Z') c |= 0x20;
+      if (d>='A' && d<='Z') d |= 0x20;
+      if (c!=d) return 1;
+    }
+    ++a;
+    ++b;
+  }
+  return 0;
+}
+
 void printerror(const int n, ...) {
   error = 1;
   va_list args;
