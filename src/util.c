@@ -4,28 +4,29 @@
 #include <ncurses.h>
 #include "shared.h"
 
+// case-insensitive strcmp
 int istrcmp(char *a, char*b) {
-  if (strlen(a)!=strlen(b)) return 1;
   while (*a) {
     if (*a != *b) {
       char c=*a,d=*b;
       if (c>='A' && c<='Z') c |= 0x20;
       if (d>='A' && d<='Z') d |= 0x20;
-      if (c!=d) return 1;
+      if (c!=d) return (c<d)?-1:1;
     }
     ++a;
     ++b;
   }
+  if (*b) return -1;
   return 0;
 }
+// case-insensitive strncmp
 int istrncmp(char *a, char *b, int n) {
-  if (strlen(a)<n || strlen(b)<n) return 1;
   for (int i=0;i<n;++i) {
     if (*a != *b) {
       char c=*a,d=*b;
       if (c>='A' && c<='Z') c |= 0x20;
       if (d>='A' && d<='Z') d |= 0x20;
-      if (c!=d) return 1;
+      if (c!=d) return (c<d)?-1:1;
     }
     ++a;
     ++b;
