@@ -299,7 +299,7 @@ static void player_enter() {
     setup_edit();
     for (int i=0;i<partyinfo.num_curr_characters;++i) {
       if (player == &players[i]) {
-        highlight = 8+i;
+        highlight = firstcharindex+i;
         break;
       }
     }
