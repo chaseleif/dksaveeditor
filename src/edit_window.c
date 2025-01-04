@@ -307,10 +307,16 @@ static void player_enter() {
     return;
   }
   if (highlight == lastindex-1) {
+    const char *str1 = (player->fire_resistance)?
+                  "Resetting fire resistance":"Fire resistance already zero";
     player->fire_resistance = 0;
+    const char *str2 = (player->weapon_buff)?
+                  "Resetting weapon bonuses":"Weapon bonuses already zero";
     player->weapon_buff = 0;
+    const char *str3 = (player->armor_buff)?
+                  "Reseting armor bonuses":"Armor bonuses already zero";
     player->armor_buff = 0;
-    printerror(1,"Player alchemy and saint bonuses cleared");
+    printerror(3,str1,str2,str3);
     return;
   }
   switch(highlight) {
