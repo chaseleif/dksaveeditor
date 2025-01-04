@@ -42,7 +42,7 @@ enum { PARTY=0, PLAYER=1, ATTR=2, SKILL=4,
 enum { BASE=0, ADD=1, DESC=2 };
 
 static struct character *player = NULL;
-static int saveindex, state, lastindex;
+static int saveindex, state, lastindex, firstcharindex;
 
 static void setup_player();
 static void player_enter();
@@ -172,7 +172,8 @@ void setup_edit() {
   sprintf(menuoptions[5],"Reputation: %u",saveinfo.reputation);
   sprintf(menuoptions[6],"Philosopher Stone: %u",saveinfo.philosopher_stone);
   sprintf(menuoptions[7],"City contents seed: %u",saveinfo.city_contents_seed);
-  lastindex=8;
+  strcpy(menuoptions[8],"Fix color bug");
+  firstcharindex = lastindex = 9;
   for (int i=0;i<partyinfo.num_curr_characters;++i) {
     sprintf(menuoptions[lastindex++],"%s (%s) age %u",
             players[i].name, players[i].short_name, players[i].age);
@@ -205,9 +206,9 @@ static int edit_enter() {
     edit_processinput(KEY_UP);
     clear();
   }
-  // a player, playerindex == highlight-8
-  else if (highlight>=8) {
-    player = &players[highlight-8];
+  // a player, playerindex == highlight-firstcharindex
+  else if (highlight>=firstcharindex) {
+    player = &players[highlight-firstcharindex];
     setup_player();
     clear();
   }
@@ -241,6 +242,9 @@ static int edit_enter() {
       case 7:
         strcpy(msgstr,"City contents random seed");
         dst = &saveinfo.city_contents_seed;
+        break;
+      case 8:
+        fixcolors();
         break;
     }
     sprintf(field,"%u",*dst);
@@ -281,6 +285,7 @@ static void setup_player() {
     strcpy(menuoptions[++lastindex],"Player Saints");
     strcpy(menuoptions[++lastindex],"Player Formulas");
   }
+  strcpy(menuoptions[++lastindex],"Clear player alchemy and saint bonuses");
   strcpy(menuoptions[++lastindex],"Return to party");
   menuoptions[lastindex+1][0] = '\0';
   clear();
@@ -299,6 +304,13 @@ static void player_enter() {
       }
     }
     clear();
+    return;
+  }
+  if (highlight == lastindex-1) {
+    player->fire_resistance = 0;
+    player->weapon_buff = 0;
+    player->armor_buff = 0;
+    printerror(1,"Player alchemy and saint bonuses cleared");
     return;
   }
   switch(highlight) {

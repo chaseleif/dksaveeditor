@@ -72,6 +72,7 @@ uint16_t atouint16(char *a);
 void getinput();
 void printerror(const int n, ...);
 
+void fixcolors();
 void setup_main();
 int main_processinput(const int ch);
 void setup_prep();
