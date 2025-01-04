@@ -28,6 +28,7 @@ int istrncmp(char *a, char *b, int n) {
       if (d>='A' && d<='Z') d |= 0x20;
       if (c!=d) return (c<d)?-1:1;
     }
+    else if (!*a) return 0;
     ++a;
     ++b;
   }
