@@ -56,17 +56,33 @@ struct character {
   char shield;
   uint8_t unkn3[12];
   uint16_t equip_missile_type;
-  uint8_t unkn4;
+  // fire_resistance starts at zero
+  // take firewall ~ q25: +50, q35: +70, q45: +90
+  // st. polycarp  ~ +90
+  uint8_t fire_resistance;
   char name[25];
-  char short_name[11];
-  uint8_t unkn5[2];
+  char short_name[10];
+  // weapon_buff starts at zero
+  // strongedge  ~ q25: +3, q35: +4, q45: +5
+  // greatpower  ~ q25: +14, q35: +22, q45: +30
+  // deadlyblade ~ q25: +48, q34: +64, q45: +80
+  uint8_t weapon_buff;
+  uint8_t equipped_weight;
+  // (unkn4 = 0xff since beginning)
+  uint8_t unkn4;
   uint8_t equip_vital_type;
   uint8_t equip_leg_type;
-  uint8_t unkn6[2];
+  uint8_t unkn5[2];
   uint8_t equip_vital_q;
   uint8_t equip_leg_q;
   uint8_t equip_weapon_type;
-  uint8_t unkn7[6];
+  uint8_t unkn6[3];
+  // armor_buff starts at zero
+  // take hardarmor ~ q25: +1, q35: +2, q45: +3
+  // take firewall  ~ q25/35/45: +16
+  // st. polycarp   ~ +176
+  uint8_t armor_buff;
+  uint8_t unkn7[2];
   uint8_t equip_weapon_q;
   uint8_t unkn8;
   uint8_t equip_missile_q;
