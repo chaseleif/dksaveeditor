@@ -83,7 +83,7 @@ void printerror(const int n, ...) {
   refreshwithborder(DKBLKGRN);
   flushinp();
   int ch = getch();
-  while (ch != KEY_ENTER) { ch=getch(); }
+  while (ch != KEY_ENTER && ch != '\n') { ch=getch(); }
   clear();
   refreshwithborder(DKBLKGRN);
 }
