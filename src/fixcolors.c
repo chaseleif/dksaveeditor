@@ -6,6 +6,7 @@
 #include "shared.h"
 
 extern char *dksavefile;
+extern struct partyheader partyinfo;
 
 static int runfixcolors() {
   FILE *savefile = fopen(dksavefile, "rb+");
@@ -20,6 +21,7 @@ static int runfixcolors() {
   // this is where colors should be
   fseek(savefile, 273, SEEK_SET);
   fwrite(party_colors, sizeof(struct person_colors), 5, savefile);
+  memcpy(partyinfo.party_colors, party_colors, sizeof(struct person_colors)*5);
   fclose(savefile);
   return 0;
 }

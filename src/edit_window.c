@@ -245,7 +245,7 @@ static int edit_enter() {
         break;
       case 8:
         fixcolors();
-        break;
+        return EDITMENU;
     }
     sprintf(field,"%u",*dst);
     getinput();
