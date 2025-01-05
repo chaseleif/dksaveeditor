@@ -16,8 +16,8 @@ static int runfixcolors() {
     printerror(2,"Unable to open save file", dksavefile);
     return -1;
   }
-  // 276 is 3 bytes/24 bits past where the colors are supposed to be
-  fseek(savefile, 276, SEEK_SET);
+  // 275 is 2 bytes/16 bits past where the colors are supposed to be
+  fseek(savefile, 275, SEEK_SET);
   struct person_colors party_colors[5];
   fread(party_colors, sizeof(struct person_colors), 5, savefile);
   fclose(savefile);
