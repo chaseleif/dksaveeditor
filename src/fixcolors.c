@@ -28,6 +28,10 @@ static int runfixcolors() {
 }
 
 void fixcolors() {
+  if (alreadyfixedcolors) {
+    printerror(1,"Already applied the color-fix patch, save the changes!");
+    return;
+  }
   clear();
   const int menuwidth = 40;
   int maxy,maxx;
@@ -49,9 +53,7 @@ void fixcolors() {
   refreshwithborder(DKBLKGRN);
   flushinp();
   int ch = getch();
-  if (alreadyfixedcolors)
-    printerror(1,"Already applied the color-fix patch, save the changes!");
-  else if ((ch|0x20) =='y' && !runfixcolors())
+  if ((ch|0x20) =='y' && !runfixcolors())
     printerror(1,"Color-fix patch was applied, do not run again.");
   else
     printerror(1,"Color-fix patch was not applied.");
