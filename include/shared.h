@@ -87,10 +87,8 @@ void setup_edit();
 int edit_processinput(const int ch);
 int isdirectory(char *name);
 int isfile(char *name);
-void loadsave(char *filename, struct character **players,
-              struct savefileheader *saveinfo, struct partyheader *partyinfo);
-void savesave(char *filename, struct character *players,
-              struct savefileheader *saveinfo, struct partyheader *partyinfo);
+void loadsave();
+void savesave();
 void load_lst(char *filename);
 void load_darklands_data();
 void load_static_darklands_data();

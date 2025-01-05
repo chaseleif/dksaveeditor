@@ -55,11 +55,14 @@ typedef struct formula_definition formula_definition;
 typedef struct formula formula;
 typedef struct saint saint;
 
+extern struct character *players;
+extern struct savefileheader saveinfo;
+extern struct partyheader partyinfo;
 extern item_definition *items;
 extern saint *saints;
 extern formula *formulas;
 
-extern char *msgstr, *dkdir;
+extern char *msgstr, *dkdir, *dksavefile;
 extern uint8_t num_items, num_saints, num_formulas;
 
 static FILE *lstfile=NULL, *sntfile=NULL, *alcfile=NULL, *savefile=NULL;
@@ -78,38 +81,38 @@ int isfile(char *name) {
   return S_ISREG(path.st_mode);
 }
 
-void loadsave(char *filename, character **players,
-              savefileheader *saveinfo, partyheader *partyinfo) {
-  if (*players) { free(*players); *players=NULL; }
-  FILE *savefile = fopen(filename, "rb");
+void loadsave() {
+  if (players) { free(players); players=NULL; }
+  FILE *savefile = fopen(dksavefile, "rb");
   if (!savefile)
     ERROR(nullptr, "Unable to open save file");
-  if (fread(saveinfo, sizeof(savefileheader), 1, savefile) != 1)
+  if (fread(&saveinfo, sizeof(savefileheader), 1, savefile) != 1)
     ERROR(nullptr, "Failed to read save header of save file");
   if (fseek(savefile, 239, SEEK_SET))
     ERROR(nullptr, "Failed to seek in save file");
-  if (fread(partyinfo, sizeof(partyheader), 1, savefile) != 1)
+  if (fread(&partyinfo, sizeof(partyheader), 1, savefile) != 1)
     ERROR(nullptr, "Failed to read party header in save file");
-  *players = malloc(sizeof(character)*partyinfo->num_curr_characters);
-  for (int chari=0;chari<partyinfo->num_curr_characters;++chari) {
-    if (fseek(savefile, 393+partyinfo->party_char_indices[chari]*554, SEEK_SET))
-      ERROR(*players, "Failed to seek in save file");
-    if (fread(&(*players)[chari], sizeof(character), 1, savefile) != 1)
-      ERROR(*players, "Failed to read character in save file");
+  players = malloc(sizeof(character)*partyinfo.num_curr_characters);
+  for (int chari=0;chari<partyinfo.num_curr_characters;++chari) {
+    if (fseek(savefile, 393+partyinfo.party_char_indices[chari]*554, SEEK_SET))
+      ERROR(players, "Failed to seek in save file");
+    if (fread(&players[chari], sizeof(character), 1, savefile) != 1)
+      ERROR(players, "Failed to read character in save file");
   }
   fclose(savefile);
   return;
 }
 
-void savesave(char *filename, character *players,
-              savefileheader *saveinfo, partyheader *partyinfo) {
-  FILE *savefile = fopen(filename, "rb+");
+void savesave() {
+  FILE *savefile = fopen(dksavefile, "rb+");
   if (!savefile)
     ERROR(nullptr, "Unable to open save file");
-  if (fwrite(saveinfo, sizeof(savefileheader), 1, savefile) != 1)
+  if (fwrite(&saveinfo, sizeof(savefileheader), 1, savefile) != 1)
     ERROR(nullptr, "Failed to write in save file");
-  for (int chari=0;chari<partyinfo->num_curr_characters;++chari) {
-    if (fseek(savefile, 393+partyinfo->party_char_indices[chari]*554, SEEK_SET))
+  if (fwrite(&partyinfo, sizeof(partyheader), 1, savefile) != 1)
+    ERROR(nullptr, "Failed to write in save file");
+  for (int chari=0;chari<partyinfo.num_curr_characters;++chari) {
+    if (fseek(savefile, 393+partyinfo.party_char_indices[chari]*554, SEEK_SET))
       ERROR(nullptr, "Failed to seek in save file");
     if (fwrite(&players[chari], sizeof(character), 1, savefile) != 1)
       ERROR(nullptr, "Failed to write in save file");

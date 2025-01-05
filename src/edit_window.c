@@ -195,11 +195,11 @@ static int edit_enter() {
   // the final options after player(s)
   if (highlight==lastindex) return PREPMENU;
   else if (highlight==lastindex-1) {
-    savesave(dksavefile, players, &saveinfo, &partyinfo);
+    savesave();
     printerror(2,"Saved",dksavefile);
   }
   else if (highlight==lastindex-2) {
-    loadsave(dksavefile, &players, &saveinfo, &partyinfo);
+    loadsave();
     setup_edit();
     edit_processinput(KEY_END);
     edit_processinput(KEY_UP);

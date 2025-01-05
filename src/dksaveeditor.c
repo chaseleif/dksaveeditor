@@ -75,7 +75,7 @@ int main(int argc, char **argv) {
               free(players);
               players = NULL;
             }
-            loadsave(dksavefile, &players, &saveinfo, &partyinfo);
+            loadsave();
             if (!players) {
               printerror(2,"Error loading save file:", dksavefile);
               strcpy(dksavefile, ".");
