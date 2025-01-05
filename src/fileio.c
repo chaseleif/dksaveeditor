@@ -35,13 +35,15 @@
     return;                           \
   }while(0)
 
-#define read_header(dst, size, count, file)                 \
-  if (fread(dst,size,count,file) != count)                  \
-    ERROR(nullptr, "Failed to read field in save header");  \
-
-#define write_header(src, size, count, file)                \
-  if (fwrite(src,size,count,file) != count)                 \
-    ERROR(nullptr, "Failed to write field in save header"); \
+#define do_header(ptr, size, count, file)                     \
+  if ((rw==0 && fread(ptr,size,count,file) != count) ||       \
+      (rw==1 && fwrite(ptr,size,count,file) != count)) {      \
+    sprintf(msgstr,"Error %s:%d %s",                          \
+            __FILE__, __LINE__, "File IO failed in header");  \
+    printerror(1, msgstr);                                    \
+    fclose(savefile);                                         \
+    return -1;                                                \
+  }
 
 typedef struct savefileheader savefileheader;
 typedef struct partyheader partyheader;
@@ -77,46 +79,52 @@ int isfile(char *name) {
   return S_ISREG(path.st_mode);
 }
 
+static int process_header(const int rw, FILE *savefile) {
+  do_header(saveinfo.curr_location_name,sizeof(char),12,savefile);
+  do_header(saveinfo.unkn1,sizeof(uint8_t),9,savefile);
+  do_header(saveinfo.save_game_label,sizeof(char),23,savefile);
+  do_header(saveinfo.unkn2,sizeof(uint16_t),28,savefile);
+  do_header(&saveinfo.city_contents_seed,sizeof(uint16_t),1,savefile);
+  do_header(&saveinfo.unkn3,sizeof(uint16_t),1,savefile);
+  do_header(&saveinfo.year,sizeof(uint16_t),1,savefile);
+  do_header(&saveinfo.month,sizeof(uint16_t),1,savefile);
+  do_header(&saveinfo.day,sizeof(uint16_t),1,savefile);
+  do_header(&saveinfo.hour,sizeof(uint16_t),1,savefile);
+  do_header(&saveinfo.party_money,sizeof(struct money),1,savefile);
+  do_header(saveinfo.unkn4,sizeof(uint16_t),2,savefile);
+  do_header(&saveinfo.reputation,sizeof(uint16_t),1,savefile);
+  do_header(&saveinfo.curr_location,sizeof(uint16_t),1,savefile);
+  do_header(&saveinfo.x_coord,sizeof(uint16_t),1,savefile);
+  do_header(&saveinfo.y_coord,sizeof(uint16_t),1,savefile);
+  do_header(&saveinfo.curr_menu,sizeof(uint16_t),1,savefile);
+  do_header(saveinfo.unkn5,sizeof(uint16_t),3,savefile);
+  do_header(&saveinfo.prev_menu,sizeof(uint16_t),1,savefile);
+  do_header(&saveinfo.bank_notes,sizeof(uint16_t),1,savefile);
+  do_header(saveinfo.unkn6,sizeof(uint16_t),2,savefile);
+  do_header(&saveinfo.philosopher_stone,sizeof(uint16_t),1,savefile);
+  do_header(saveinfo.unkn7,sizeof(uint8_t),7,savefile);
+  do_header(saveinfo.party_order_indices,sizeof(uint8_t),5,savefile);
+  do_header(&saveinfo.unkn8,sizeof(uint8_t),1,savefile);
+  do_header(&saveinfo.party_leader_index,sizeof(uint8_t),1,savefile);
+  do_header(&saveinfo.unkn9,sizeof(uint8_t),1,savefile);
+  do_header(saveinfo.unkn10,sizeof(uint16_t),38,savefile);
+  do_header(&partyinfo.num_curr_characters,sizeof(uint16_t),1,savefile);
+  do_header(&partyinfo.num_characters,sizeof(uint16_t),1,savefile);
+  do_header(partyinfo.party_char_indices,sizeof(uint16_t),5,savefile);
+  for (int i=0;i<5;++i) {
+    do_header(partyinfo.party_images[i],sizeof(char),4,savefile);
+  }
+  do_header(partyinfo.party_colors,sizeof(struct person_colors),5,savefile);
+  return 0;
+}
+
 void loadsave() {
   if (players) { free(players); players=NULL; }
   FILE *savefile = fopen(dksavefile, "rb");
   if (!savefile)
     ERROR(nullptr, "Unable to open save file");
-  read_header(saveinfo.curr_location_name,sizeof(char),12,savefile);
-  read_header(saveinfo.unkn1,sizeof(uint8_t),9,savefile);
-  read_header(saveinfo.save_game_label,sizeof(char),23,savefile);
-  read_header(saveinfo.unkn2,sizeof(uint16_t),28,savefile);
-  read_header(&saveinfo.city_contents_seed,sizeof(uint16_t),1,savefile);
-  read_header(&saveinfo.unkn3,sizeof(uint16_t),1,savefile);
-  read_header(&saveinfo.year,sizeof(uint16_t),1,savefile);
-  read_header(&saveinfo.month,sizeof(uint16_t),1,savefile);
-  read_header(&saveinfo.day,sizeof(uint16_t),1,savefile);
-  read_header(&saveinfo.hour,sizeof(uint16_t),1,savefile);
-  read_header(&saveinfo.party_money,sizeof(struct money),1,savefile);
-  read_header(saveinfo.unkn4,sizeof(uint16_t),2,savefile);
-  read_header(&saveinfo.reputation,sizeof(uint16_t),1,savefile);
-  read_header(&saveinfo.curr_location,sizeof(uint16_t),1,savefile);
-  read_header(&saveinfo.x_coord,sizeof(uint16_t),1,savefile);
-  read_header(&saveinfo.y_coord,sizeof(uint16_t),1,savefile);
-  read_header(&saveinfo.curr_menu,sizeof(uint16_t),1,savefile);
-  read_header(saveinfo.unkn5,sizeof(uint16_t),3,savefile);
-  read_header(&saveinfo.prev_menu,sizeof(uint16_t),1,savefile);
-  read_header(&saveinfo.bank_notes,sizeof(uint16_t),1,savefile);
-  read_header(saveinfo.unkn6,sizeof(uint16_t),2,savefile);
-  read_header(&saveinfo.philosopher_stone,sizeof(uint16_t),1,savefile);
-  read_header(saveinfo.unkn7,sizeof(uint8_t),7,savefile);
-  read_header(saveinfo.party_order_indices,sizeof(uint8_t),5,savefile);
-  read_header(&saveinfo.unkn8,sizeof(uint8_t),1,savefile);
-  read_header(&saveinfo.party_leader_index,sizeof(uint8_t),1,savefile);
-  read_header(&saveinfo.unkn9,sizeof(uint8_t),1,savefile);
-  read_header(saveinfo.unkn10,sizeof(uint16_t),38,savefile);
-  read_header(&partyinfo.num_curr_characters,sizeof(uint16_t),1,savefile);
-  read_header(&partyinfo.num_characters,sizeof(uint16_t),1,savefile);
-  read_header(partyinfo.party_char_indices,sizeof(uint16_t),5,savefile);
-  for (int i=0;i<5;++i) {
-    read_header(partyinfo.party_images[i],sizeof(char),4,savefile);
-  }
-  read_header(partyinfo.party_colors,sizeof(struct person_colors),5,savefile);
+  if (process_header(0, savefile))
+    return;
   players = malloc(sizeof(character)*partyinfo.num_curr_characters);
   for (int chari=0;chari<partyinfo.num_curr_characters;++chari) {
     if (fseek(savefile, 393+partyinfo.party_char_indices[chari]*554, SEEK_SET))
@@ -132,41 +140,8 @@ void savesave() {
   FILE *savefile = fopen(dksavefile, "rb+");
   if (!savefile)
     ERROR(nullptr, "Unable to open save file");
-  write_header(saveinfo.curr_location_name,sizeof(char),12,savefile);
-  write_header(saveinfo.unkn1,sizeof(uint8_t),9,savefile);
-  write_header(saveinfo.save_game_label,sizeof(char),23,savefile);
-  write_header(saveinfo.unkn2,sizeof(uint16_t),28,savefile);
-  write_header(&saveinfo.city_contents_seed,sizeof(uint16_t),1,savefile);
-  write_header(&saveinfo.unkn3,sizeof(uint16_t),1,savefile);
-  write_header(&saveinfo.year,sizeof(uint16_t),1,savefile);
-  write_header(&saveinfo.month,sizeof(uint16_t),1,savefile);
-  write_header(&saveinfo.day,sizeof(uint16_t),1,savefile);
-  write_header(&saveinfo.hour,sizeof(uint16_t),1,savefile);
-  write_header(&saveinfo.party_money,sizeof(struct money),1,savefile);
-  write_header(saveinfo.unkn4,sizeof(uint16_t),2,savefile);
-  write_header(&saveinfo.reputation,sizeof(uint16_t),1,savefile);
-  write_header(&saveinfo.curr_location,sizeof(uint16_t),1,savefile);
-  write_header(&saveinfo.x_coord,sizeof(uint16_t),1,savefile);
-  write_header(&saveinfo.y_coord,sizeof(uint16_t),1,savefile);
-  write_header(&saveinfo.curr_menu,sizeof(uint16_t),1,savefile);
-  write_header(saveinfo.unkn5,sizeof(uint16_t),3,savefile);
-  write_header(&saveinfo.prev_menu,sizeof(uint16_t),1,savefile);
-  write_header(&saveinfo.bank_notes,sizeof(uint16_t),1,savefile);
-  write_header(saveinfo.unkn6,sizeof(uint16_t),2,savefile);
-  write_header(&saveinfo.philosopher_stone,sizeof(uint16_t),1,savefile);
-  write_header(saveinfo.unkn7,sizeof(uint8_t),7,savefile);
-  write_header(saveinfo.party_order_indices,sizeof(uint8_t),5,savefile);
-  write_header(&saveinfo.unkn8,sizeof(uint8_t),1,savefile);
-  write_header(&saveinfo.party_leader_index,sizeof(uint8_t),1,savefile);
-  write_header(&saveinfo.unkn9,sizeof(uint8_t),1,savefile);
-  write_header(saveinfo.unkn10,sizeof(uint16_t),38,savefile);
-  write_header(&partyinfo.num_curr_characters,sizeof(uint16_t),1,savefile);
-  write_header(&partyinfo.num_characters,sizeof(uint16_t),1,savefile);
-  write_header(partyinfo.party_char_indices,sizeof(uint16_t),5,savefile);
-  for (int i=0;i<5;++i) {
-    write_header(partyinfo.party_images[i],sizeof(char),4,savefile);
-  }
-  write_header(partyinfo.party_colors,sizeof(struct person_colors),5,savefile);
+  if (process_header(1, savefile))
+    return;
   for (int chari=0;chari<partyinfo.num_curr_characters;++chari) {
     if (fseek(savefile, 393+partyinfo.party_char_indices[chari]*554, SEEK_SET))
       ERROR(nullptr, "Failed to seek in save file");
