@@ -47,7 +47,9 @@ The saved game is then available to be viewed and modified.
 When saving changes,
 the save option will overwrite the selected name that was opened.
 
-Using the color fix immediately writes (only the) colors to the save file.
+Using the color-fix or resetting players' alchemy/saint bonuses
+is still done in-memory.
+To make the changes permanent you must "Save all changes."
 
 ## Features
 This program will open a saved game and allows to:

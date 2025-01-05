@@ -8,6 +8,8 @@
 extern char *dksavefile;
 extern struct partyheader partyinfo;
 
+static int alreadyfixedcolors=0;
+
 static int runfixcolors() {
   FILE *savefile = fopen(dksavefile, "rb+");
   if (!savefile) {
@@ -18,11 +20,10 @@ static int runfixcolors() {
   fseek(savefile, 275, SEEK_SET);
   struct person_colors party_colors[5];
   fread(party_colors, sizeof(struct person_colors), 5, savefile);
-  // this is where colors should be
-  fseek(savefile, 273, SEEK_SET);
-  fwrite(party_colors, sizeof(struct person_colors), 5, savefile);
-  memcpy(partyinfo.party_colors, party_colors, sizeof(struct person_colors)*5);
   fclose(savefile);
+  // put the colors where they should be
+  memcpy(partyinfo.party_colors, party_colors, sizeof(struct person_colors)*5);
+  alreadyfixedcolors=1;
   return 0;
 }
 
@@ -48,7 +49,9 @@ void fixcolors() {
   refreshwithborder(DKBLKGRN);
   flushinp();
   int ch = getch();
-  if ((ch|0x20) =='y' && !runfixcolors())
+  if (alreadyfixedcolors)
+    printerror(1,"Already applied the color-fix patch, save the changes!");
+  else if ((ch|0x20) =='y' && !runfixcolors())
     printerror(1,"Color-fix patch was applied, do not run again.");
   else
     printerror(1,"Color-fix patch was not applied.");
